@@ -1,0 +1,2261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>TurnMyLife</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Abril+Fatface&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night:   #0d0a1a;
+  --deep:    #130d2e;
+  --card:    #1a1235;
+  --card2:   #221840;
+  --border:  rgba(255,255,255,.1);
+  --b2:      rgba(255,255,255,.06);
+  --orange:  #ff6b2b;
+  --orange2: #ff9a3c;
+  --yellow:  #ffd23f;
+  --pink:    #ff3d9a;
+  --purple:  #a855f7;
+  --violet:  #7c3aed;
+  --cyan:    #22d3ee;
+  --lime:    #84cc16;
+  --red:     #ef4444;
+  --grad-hero:    linear-gradient(135deg, #ff6b2b 0%, #ff3d9a 50%, #a855f7 100%);
+  --grad-orange:  linear-gradient(135deg, #ff6b2b, #ff9a3c);
+  --grad-purple:  linear-gradient(135deg, #7c3aed, #a855f7);
+  --grad-cyan:    linear-gradient(135deg, #06b6d4, #22d3ee);
+  --grad-lime:    linear-gradient(135deg, #65a30d, #84cc16);
+  --grad-pink:    linear-gradient(135deg, #db2777, #ff3d9a);
+  --grad-red:     linear-gradient(135deg, #dc2626, #ef4444);
+  --text:  #f0ecff;
+  --t2:    #9b8fbf;
+  --t3:    #5c4f7a;
+  --r: 16px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--night); color: var(--text); }
+h1, h2, h3, .display { font-family: 'Bebas Neue', sans-serif; letter-spacing: .03em; }
+
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(255,107,43,.18) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 80% 90%, rgba(168,85,247,.2) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 60% 50%, rgba(255,61,154,.1) 0%, transparent 60%);
+  animation: meshMove 12s ease-in-out infinite alternate;
+}
+@keyframes meshMove {
+  0%   { opacity: .7; transform: scale(1) rotate(0deg); }
+  100% { opacity: 1;  transform: scale(1.05) rotate(2deg); }
+}
+
+#app { height: 100%; display: flex; flex-direction: column; overflow: hidden; position: relative; z-index: 1; }
+
+.topbar {
+  flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 18px; background: rgba(13,10,26,.8); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.logo {
+  font-family: 'Abril Fatface', serif; font-size: 20px; letter-spacing: .02em;
+  background: var(--grad-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.top-right { display: flex; gap: 8px; }
+.chip { display: flex; align-items: center; gap: 5px; border-radius: 20px; padding: 5px 12px; font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: .05em; border: 1px solid; }
+.chip-coins { background: rgba(255,210,63,.12); color: var(--yellow); border-color: rgba(255,210,63,.3); }
+.chip-level { background: rgba(168,85,247,.12); color: var(--purple); border-color: rgba(168,85,247,.3); }
+
+.content { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; }
+.content::-webkit-scrollbar { width: 3px; }
+.content::-webkit-scrollbar-thumb { background: rgba(255,107,43,.3); border-radius: 99px; }
+
+.bnav {
+  flex-shrink: 0; display: flex; justify-content: space-around;
+  background: rgba(13,10,26,.95); backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+}
+.nb {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: none; border: none; color: var(--t2);
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9.5px; font-weight: 600;
+  cursor: pointer; padding: 4px 8px; border-radius: 10px; transition: all .2s;
+}
+.nb .ni { font-size: 20px; transition: transform .2s; }
+.nb.active { color: var(--orange2); }
+.nb.active .ni { transform: scale(1.2); filter: drop-shadow(0 0 6px rgba(255,154,60,.6)); }
+
+.screen { display: none; padding: 0 0 24px; animation: fadeUp .3s ease; }
+.screen.active { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.screen-inner { padding: 16px; max-width: 520px; margin: 0 auto; }
+
+/* ── AUTH ── */
+#auth-screen { height: 100%; overflow-y: auto; background: linear-gradient(180deg, #0d0a1a 0%, #1a0a2e 100%); }
+.auth-wrap { min-height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 32px 24px; max-width: 400px; margin: 0 auto; }
+.auth-glow { width: 100px; height: 100px; border-radius: 28px; margin-bottom: 16px; background: var(--grad-hero); display: flex; align-items: center; justify-content: center; font-size: 44px; box-shadow: 0 0 60px rgba(255,107,43,.4), 0 0 120px rgba(168,85,247,.2); animation: glow 3s ease-in-out infinite alternate; }
+@keyframes glow { from { box-shadow: 0 0 40px rgba(255,107,43,.4), 0 0 80px rgba(168,85,247,.2); } to { box-shadow: 0 0 80px rgba(255,107,43,.6), 0 0 160px rgba(168,85,247,.4); } }
+.auth-title { font-size: 46px; text-align: center; margin-bottom: 4px; font-family: 'Abril Fatface', serif; background: var(--grad-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: .02em; }
+.auth-sub { font-size: 14px; color: var(--t2); text-align: center; margin-bottom: 28px; line-height: 1.6; }
+.auth-tabs { display: flex; background: var(--card); border-radius: 12px; padding: 4px; width: 100%; margin-bottom: 20px; border: 1px solid var(--b2); }
+.auth-tab { flex: 1; padding: 9px; border-radius: 9px; border: none; background: transparent; color: var(--t2); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; }
+.auth-tab.active { background: var(--grad-hero); color: #fff; box-shadow: 0 4px 16px rgba(255,107,43,.35); }
+.form-group { width: 100%; margin-bottom: 14px; }
+.form-label { font-size: 11px; font-weight: 700; color: var(--t2); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 1.2px; }
+.form-input { width: 100%; background: var(--card); border: 1px solid var(--b2); border-radius: 12px; padding: 13px 16px; color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; outline: none; transition: all .2s; }
+.form-input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,107,43,.15); }
+.form-input::placeholder { color: var(--t3); }
+textarea.form-input { resize: none; min-height: 80px; }
+.auth-btn { width: 100%; padding: 15px; background: var(--grad-hero); color: #fff; font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: .1em; border: none; border-radius: 12px; cursor: pointer; transition: all .2s; box-shadow: 0 8px 24px rgba(255,107,43,.35); }
+.auth-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(255,107,43,.5); }
+.form-error { font-size: 12px; color: var(--pink); margin-top: 5px; display: none; }
+.auth-divider { display: flex; align-items: center; gap: 12px; width: 100%; margin: 16px 0; color: var(--t3); font-size: 12px; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--b2); }
+.guest-btn { width: 100%; padding: 13px; background: var(--card); border: 1px solid var(--border); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 600; border-radius: 12px; cursor: pointer; transition: all .2s; }
+.guest-btn:hover { border-color: var(--orange); background: rgba(255,107,43,.08); }
+.auth-note { font-size: 12px; color: var(--t3); text-align: center; margin-top: 12px; line-height: 1.7; }
+
+/* Motivo card */
+.motivo-card { background: linear-gradient(135deg, rgba(168,85,247,.15), rgba(255,107,43,.1)); border: 1px solid rgba(168,85,247,.3); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+.motivo-icon { font-size: 28px; margin-bottom: 8px; }
+.motivo-lbl { font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: .08em; color: var(--purple); margin-bottom: 6px; }
+.motivo-hint { font-size: 12px; color: var(--t2); line-height: 1.5; }
+
+/* ── CARDS ── */
+.card { background: var(--card); border: 1px solid var(--b2); border-radius: var(--r); padding: 18px; margin-bottom: 12px; position: relative; overflow: hidden; }
+.clabel { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: .08em; color: var(--t2); margin-bottom: 12px; }
+
+/* HERO CARDS */
+.hero-card { border-radius: 22px; padding: 26px 22px; margin-bottom: 12px; position: relative; overflow: hidden; text-align: center; }
+.hero-card::after { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.6' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E"); pointer-events: none; }
+.streak-hero { background: linear-gradient(145deg, #1a0833, #2d0b4e); border: 1px solid rgba(168,85,247,.35); }
+.streak-big { font-size: 96px; line-height: 1; color: #fff; font-family: 'Bebas Neue', sans-serif; background: var(--grad-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 30px rgba(255,107,43,.5)); display: block; }
+.streak-lbl { font-size: 13px; color: var(--t2); margin-top: 4px; }
+.badges-row { display: flex; gap: 6px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+.badge { display: inline-flex; align-items: center; font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: .05em; padding: 3px 10px; border-radius: 20px; }
+.bo { background: rgba(255,107,43,.15); color: var(--orange2); border: 1px solid rgba(255,107,43,.3); }
+.bc { background: rgba(34,211,238,.12); color: var(--cyan); border: 1px solid rgba(34,211,238,.25); }
+.by { background: rgba(255,210,63,.12); color: var(--yellow); border: 1px solid rgba(255,210,63,.25); }
+.bp { background: rgba(168,85,247,.12); color: var(--purple); border: 1px solid rgba(168,85,247,.25); }
+.bx { background: rgba(255,255,255,.04); color: var(--t3); border: 1px solid rgba(255,255,255,.08); }
+.bg { background: rgba(132,204,22,.12); color: var(--lime); border: 1px solid rgba(132,204,22,.25); }
+.br { background: rgba(239,68,68,.12); color: var(--red); border: 1px solid rgba(239,68,68,.25); }
+
+/* MILESTONES */
+.milestones { display: flex; gap: 6px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+.ms { display: flex; flex-direction: column; align-items: center; gap: 3px; background: var(--card); border: 1px solid var(--b2); border-radius: 12px; padding: 10px 12px; min-width: 56px; transition: all .3s; }
+.ms.done { background: rgba(132,204,22,.08); border-color: rgba(132,204,22,.3); }
+.ms-i { font-size: 20px; }
+.ms-d { font-size: 10px; color: var(--t2); font-weight: 600; text-align: center; }
+
+/* XP */
+.xp-box { background: var(--card); border: 1px solid var(--b2); border-radius: var(--r); padding: 14px 16px; margin-bottom: 12px; }
+.xp-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.lv-pill { background: var(--grad-purple); color: #fff; border-radius: 20px; padding: 4px 12px; font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: .05em; }
+.lv-pill-lg { background: var(--grad-purple); color: #fff; border-radius: 20px; padding: 5px 16px; font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: .05em; display: inline-block; margin-top: 6px; }
+.pbar { height: 8px; background: var(--b2); border-radius: 99px; overflow: hidden; }
+.pfill { height: 100%; background: var(--grad-hero); border-radius: 99px; transition: width .5s ease; }
+
+/* STATS */
+.stats3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.stat-c { background: var(--card); border: 1px solid var(--b2); border-radius: 14px; padding: 14px 10px; text-align: center; }
+.stat-n { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: .03em; background: var(--grad-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.stat-l { font-size: 10px; color: var(--t2); font-weight: 600; margin-top: 2px; }
+
+/* GAMES */
+.games-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+.game-card { border-radius: 14px; padding: 14px; cursor: pointer; transition: all .2s; border: 1px solid transparent; }
+.game-card:hover { transform: translateY(-3px); }
+.gc-orange { background: linear-gradient(145deg, rgba(255,107,43,.15), rgba(255,107,43,.05)); border-color: rgba(255,107,43,.25); }
+.gc-purple { background: linear-gradient(145deg, rgba(168,85,247,.15), rgba(168,85,247,.05)); border-color: rgba(168,85,247,.25); }
+.gc-cyan   { background: linear-gradient(145deg, rgba(34,211,238,.12), rgba(34,211,238,.04)); border-color: rgba(34,211,238,.2); }
+.gc-lime   { background: linear-gradient(145deg, rgba(132,204,22,.12), rgba(132,204,22,.04)); border-color: rgba(132,204,22,.2); }
+.g-icon  { font-size: 26px; margin-bottom: 6px; }
+.g-name  { font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: .03em; }
+.g-reward{ display: inline-block; background: rgba(255,210,63,.12); color: var(--yellow); border-radius: 99px; padding: 2px 8px; font-size: 11px; font-weight: 700; margin: 4px 0 2px; }
+.g-sub   { font-size: 11px; color: var(--t2); }
+
+/* BTN */
+.btn { width: 100%; padding: 14px; background: var(--grad-hero); color: #fff; font-family: 'Bebas Neue', sans-serif; font-size: 17px; letter-spacing: .08em; border: none; border-radius: 12px; cursor: pointer; transition: all .2s; box-shadow: 0 6px 20px rgba(255,107,43,.3); }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(255,107,43,.45); }
+.btn:active { transform: none; }
+.btn-sm { font-size: 14px; padding: 9px 14px; width: auto; box-shadow: none; }
+.btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); box-shadow: none; }
+.btn-outline:hover { border-color: var(--orange); background: rgba(255,107,43,.08); transform: none; }
+.btn-purple { background: var(--grad-purple); box-shadow: 0 6px 20px rgba(168,85,247,.3); }
+.btn-cyan { background: var(--grad-cyan); box-shadow: 0 6px 20px rgba(34,211,238,.25); }
+.btn-red { background: var(--grad-red); box-shadow: 0 6px 20px rgba(239,68,68,.25); }
+.btn-lime { background: var(--grad-lime); box-shadow: 0 6px 20px rgba(132,204,22,.25); }
+
+/* COURSE CARDS */
+.course-card { border-radius: 18px; padding: 18px; margin-bottom: 12px; cursor: pointer; transition: all .2s; border: 1px solid; }
+.course-card:hover { transform: translateY(-3px); }
+.cc1 { background: linear-gradient(145deg, rgba(255,107,43,.12), rgba(255,107,43,.04)); border-color: rgba(255,107,43,.2); }
+.cc2 { background: linear-gradient(145deg, rgba(168,85,247,.12), rgba(168,85,247,.04)); border-color: rgba(168,85,247,.2); }
+.cc3 { background: linear-gradient(145deg, rgba(34,211,238,.1), rgba(34,211,238,.03)); border-color: rgba(34,211,238,.18); }
+.cc4 { background: linear-gradient(145deg, rgba(255,210,63,.1), rgba(255,210,63,.03)); border-color: rgba(255,210,63,.18); }
+.c-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.c-icon { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.c-title { font-family: 'Bebas Neue', sans-serif; font-size: 17px; letter-spacing: .03em; }
+.c-src { font-size: 12px; color: var(--t2); margin-top: 2px; }
+.c-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 12px; }
+
+/* RANK */
+.rank-card { display: flex; align-items: center; gap: 12px; background: var(--card2); border: 1px solid var(--b2); border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; transition: all .2s; }
+.rank-card:hover { border-color: rgba(255,107,43,.2); }
+.rank-n { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--t2); width: 28px; text-align: center; }
+.rank-av { font-size: 28px; }
+.rank-info { flex: 1; }
+.rank-name { font-size: 14px; font-weight: 700; }
+.rank-sub { font-size: 12px; color: var(--t2); margin-top: 2px; }
+.rank-score { font-family: 'Bebas Neue', sans-serif; font-size: 17px; color: var(--orange2); }
+.rank-card.me { background: rgba(255,107,43,.08); border-color: rgba(255,107,43,.3); }
+
+/* DEPOSIT */
+.deposit-hero { background: linear-gradient(145deg, rgba(34,211,238,.12), rgba(132,204,22,.06)); border: 1px solid rgba(34,211,238,.2); border-radius: 20px; padding: 22px; text-align: center; margin-bottom: 14px; }
+.deposit-balance { font-family: 'Bebas Neue', sans-serif; font-size: 52px; letter-spacing: .03em; background: var(--grad-cyan); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; }
+.deposit-lbl { font-size: 13px; color: var(--t2); margin-top: 4px; }
+.dep-saved { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; color: var(--lime); margin-top: 10px; font-weight: 600; }
+.dep-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--b2); }
+.dep-item:last-child { border-bottom: none; }
+.dep-left { display: flex; align-items: center; gap: 10px; }
+.dep-icon { font-size: 20px; width: 36px; height: 36px; background: var(--card2); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.dep-name { font-size: 13px; font-weight: 600; }
+.dep-date { font-size: 11px; color: var(--t2); margin-top: 2px; }
+.dep-amount { font-family: 'Bebas Neue', sans-serif; font-size: 17px; color: var(--lime); letter-spacing: .03em; }
+.inp-money { display: flex; align-items: center; background: var(--card2); border: 1px solid var(--b2); border-radius: 12px; padding: 4px 4px 4px 14px; margin-bottom: 12px; }
+.money-pfx { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--t2); letter-spacing: .03em; margin-right: 6px; }
+.money-inp { flex: 1; background: none; border: none; color: var(--text); font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: .03em; outline: none; padding: 8px 0; }
+
+/* COFRE VIRTUAL */
+.cofre-section { background: linear-gradient(145deg, rgba(255,210,63,.08), rgba(255,107,43,.05)); border: 1px solid rgba(255,210,63,.2); border-radius: 18px; padding: 18px; margin-bottom: 12px; }
+.cofre-milestones { display: flex; flex-direction: column; gap: 8px; }
+.cofre-ms { display: flex; align-items: center; gap: 12px; background: var(--card2); border: 1px solid var(--b2); border-radius: 12px; padding: 12px 14px; transition: all .3s; }
+.cofre-ms.done { background: rgba(132,204,22,.08); border-color: rgba(132,204,22,.3); }
+.cofre-ms.next { border-color: rgba(255,210,63,.3); background: rgba(255,210,63,.06); }
+.cofre-ms-day { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--orange2); width: 52px; }
+.cofre-ms-info { flex: 1; }
+.cofre-ms-title { font-size: 13px; font-weight: 700; }
+.cofre-ms-sub { font-size: 11px; color: var(--t2); margin-top: 2px; }
+.cofre-ms-val { font-family: 'Bebas Neue', sans-serif; font-size: 17px; color: var(--lime); }
+.cofre-ms.done .cofre-ms-val { color: var(--lime); }
+.money-saved-big { font-family: 'Bebas Neue', sans-serif; font-size: 36px; background: var(--grad-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+/* REALITY */
+.reality-hero { background: linear-gradient(145deg, #1a0510, #200a14); border: 1px solid rgba(255,61,154,.2); border-radius: 18px; padding: 22px; text-align: center; margin-bottom: 14px; }
+.reality-title { font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: .1em; color: var(--pink); margin-bottom: 6px; }
+.reality-loss { font-family: 'Bebas Neue', sans-serif; font-size: 52px; letter-spacing: .03em; background: var(--grad-pink); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; }
+.reality-sub { font-size: 13px; color: var(--t2); margin-top: 4px; }
+.purchase-card { background: var(--card2); border: 1px solid var(--b2); border-radius: 14px; padding: 14px; margin-bottom: 8px; }
+.pc-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.pc-emoji { font-size: 26px; width: 44px; height: 44px; background: var(--card); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pc-info { flex: 1; }
+.pc-name { font-size: 13px; font-weight: 700; }
+.pc-cat { font-size: 11px; color: var(--t2); margin-top: 2px; }
+.pc-price { font-family: 'Bebas Neue', sans-serif; font-size: 16px; color: var(--orange2); letter-spacing: .03em; text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
+.pc-price small { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 10px; color: var(--t3); font-style: normal; }
+.qty-row { display: flex; align-items: center; gap: 6px; background: var(--card); border-radius: 9px; padding: 8px 12px; }
+.qty-icon { font-size: 14px; }
+.qty-txt { font-size: 12px; color: var(--t2); flex: 1; }
+.qty-num { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--cyan); letter-spacing: .03em; }
+.warn-box { background: rgba(255,61,154,.06); border: 1px solid rgba(255,61,154,.18); border-radius: 14px; padding: 16px; margin: 12px 0; }
+.warn-title { font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: .07em; color: var(--pink); margin-bottom: 10px; }
+.warn-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 13px; line-height: 1.5; }
+.warn-row:last-child { margin-bottom: 0; }
+.warn-icon { flex-shrink: 0; font-size: 14px; }
+
+/* PROFILE */
+.profile-hero { background: linear-gradient(145deg, #1a0a2e, #150826); border: 1px solid rgba(168,85,247,.2); border-radius: 22px; padding: 28px 22px; text-align: center; margin-bottom: 14px; }
+.profile-av { font-size: 60px; margin-bottom: 8px; filter: drop-shadow(0 0 20px rgba(255,107,43,.4)); }
+.profile-name { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: .04em; background: var(--grad-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.av-grid { display: grid; grid-template-columns: repeat(8,1fr); gap: 6px; margin-bottom: 6px; }
+.av-opt { font-size: 22px; padding: 5px; cursor: pointer; border-radius: 9px; text-align: center; border: 2px solid transparent; transition: all .15s; }
+.av-opt:hover { background: var(--card2); }
+.av-opt.sel { border-color: var(--orange); background: rgba(255,107,43,.12); }
+.cert-card { display: flex; align-items: center; gap: 12px; background: var(--card2); border: 1px solid rgba(255,210,63,.15); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer; transition: all .2s; }
+.cert-card:hover { border-color: rgba(255,210,63,.35); background: rgba(255,210,63,.06); }
+.shop-item { display: flex; align-items: center; gap: 12px; background: var(--card2); border: 1px solid var(--b2); border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; transition: all .2s; }
+.shop-item:hover { border-color: rgba(255,107,43,.2); }
+.shop-icon { font-size: 26px; }
+.shop-name { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: .03em; }
+.shop-desc { font-size: 12px; color: var(--t2); margin-top: 2px; }
+.buy-btn { background: rgba(255,210,63,.12); border: 1px solid rgba(255,210,63,.28); border-radius: 10px; padding: 7px 12px; font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: .04em; color: var(--yellow); cursor: pointer; transition: all .2s; white-space: nowrap; margin-left: auto; }
+.buy-btn:hover { background: rgba(255,210,63,.2); }
+
+/* MODAL */
+.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.85); backdrop-filter: blur(12px); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity .25s; }
+.modal-bg.open { opacity: 1; pointer-events: all; }
+.modal { background: var(--deep); border: 1px solid rgba(255,107,43,.2); border-radius: 22px; padding: 24px; width: 100%; max-width: 440px; max-height: 88vh; overflow-y: auto; transform: translateY(16px) scale(.97); transition: all .25s; position: relative; }
+.modal-bg.open .modal { transform: none; }
+.modal-bg.open .modal::-webkit-scrollbar { width: 3px; }
+.modal-bg.open .modal::-webkit-scrollbar-thumb { background: rgba(255,107,43,.3); border-radius: 99px; }
+.mc { position: absolute; top: 14px; right: 14px; background: var(--card2); border: 1px solid var(--b2); color: var(--t2); border-radius: 9px; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+.mc:hover { color: var(--text); border-color: var(--orange); }
+.mt { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: .05em; margin-bottom: 14px; padding-right: 32px; background: var(--grad-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+/* QUIZ */
+.qprog { display: flex; gap: 4px; margin-bottom: 16px; }
+.qd { height: 5px; flex: 1; border-radius: 99px; background: var(--b2); transition: background .3s; }
+.qd.done { background: var(--lime); }
+.qd.act { background: var(--orange); box-shadow: 0 0 8px rgba(255,107,43,.5); }
+.quiz-q { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 16px; line-height: 1.5; }
+.quiz-opts { display: grid; gap: 8px; }
+.qopt { padding: 12px 15px; background: var(--card2); border: 1px solid var(--b2); border-radius: 12px; cursor: pointer; font-size: 14px; transition: all .15s; text-align: left; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
+.qopt:hover { border-color: var(--orange); background: rgba(255,107,43,.1); }
+.qopt.correct { background: rgba(132,204,22,.15); border-color: var(--lime); color: var(--lime); }
+.qopt.wrong { background: rgba(255,61,154,.15); border-color: var(--pink); color: var(--pink); }
+
+/* PUZZLE */
+.puzzle-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 5px; margin: 12px 0; }
+.pc-cell { aspect-ratio: 1; border-radius: 9px; cursor: pointer; border: 2px solid transparent; transition: all .15s; }
+.pc-cell:hover { border-color: rgba(255,255,255,.4); transform: scale(1.06); }
+.pc-cell.selected { border-color: #fff; transform: scale(1.1); box-shadow: 0 0 10px rgba(255,255,255,.3); }
+.pc-cell.matched { opacity: 0; transform: scale(0); }
+.g-timer { font-family: 'Bebas Neue', sans-serif; font-size: 42px; letter-spacing: .03em; text-align: center; background: var(--grad-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.g-timer.low { -webkit-text-fill-color: var(--pink); filter: drop-shadow(0 0 8px rgba(255,61,154,.6)); animation: pulse .5s ease infinite alternate; }
+@keyframes pulse { from { opacity: 1; } to { opacity: .4; } }
+
+/* MAZE */
+#maze-c { border: 2px solid rgba(168,85,247,.3); border-radius: 12px; display: block; margin: 0 auto; image-rendering: pixelated; max-width: 100%; }
+.maze-btns { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-top: 12px; max-width: 150px; margin-left: auto; margin-right: auto; }
+.mb { padding: 10px; border-radius: 9px; background: var(--card2); border: 1px solid var(--b2); color: var(--text); font-size: 16px; cursor: pointer; transition: all .15s; }
+.mb:hover { background: rgba(168,85,247,.15); border-color: rgba(168,85,247,.4); }
+.mb:active { transform: scale(.93); }
+
+/* BUDGET */
+.budget-item { display: flex; align-items: center; gap: 10px; background: var(--card2); border: 1px solid var(--b2); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
+input[type=range] { flex: 1; -webkit-appearance: none; height: 5px; border-radius: 99px; background: rgba(255,255,255,.1); outline: none; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--orange); cursor: pointer; box-shadow: 0 0 0 3px rgba(255,107,43,.2); }
+.bv { font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: .03em; color: var(--orange2); min-width: 56px; text-align: right; }
+
+/* MODULE */
+.mod-item { background: var(--card2); border: 1px solid var(--b2); border-radius: 12px; padding: 13px 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all .2s; }
+.mod-item:hover { border-color: rgba(255,107,43,.25); }
+.mod-item.done { background: rgba(132,204,22,.08); border-color: rgba(132,204,22,.25); }
+.mod-num { width: 28px; height: 28px; border-radius: 8px; background: var(--card); display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 13px; font-weight: 800; flex-shrink: 0; color: var(--t2); }
+.mod-item.done .mod-num { background: var(--lime); color: #0d1a00; }
+
+/* CERT */
+.cert-prev { background: linear-gradient(145deg, #1a100a, #120a05); border: 2px solid var(--yellow); border-radius: 18px; padding: 28px 22px; text-align: center; margin: 14px 0; position: relative; overflow: hidden; }
+.cert-prev::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(255,210,63,.08), transparent 60%); }
+.cert-bar { width: 60px; height: 2px; background: linear-gradient(90deg, transparent, var(--yellow), transparent); margin: 14px auto; }
+
+/* TOAST */
+.toast { position: fixed; bottom: calc(env(safe-area-inset-bottom) + 72px); left: 50%; transform: translateX(-50%) translateY(8px); background: var(--grad-hero); color: #fff; font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: .06em; padding: 11px 24px; border-radius: 13px; opacity: 0; transition: all .3s; z-index: 9998; white-space: nowrap; pointer-events: none; box-shadow: 0 8px 28px rgba(255,107,43,.4); max-width: 90vw; white-space: normal; text-align: center; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.red { background: linear-gradient(135deg, #dc2626, var(--pink)); box-shadow: 0 8px 28px rgba(220,38,38,.4); }
+
+/* DYK CARD */
+.dyk-card { background: linear-gradient(135deg, rgba(168,85,247,.12), rgba(255,107,43,.08)); border: 1px solid rgba(168,85,247,.2); border-radius: var(--r); padding: 18px; margin-bottom: 12px; }
+
+/* SECTION HEADING */
+.sh { margin-bottom: 18px; }
+.sh h2 { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: .05em; background: var(--grad-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.sh p { font-size: 14px; color: var(--t2); margin-top: 3px; }
+
+/* MOTIVO LEMBRETE */
+.motivo-banner { background: linear-gradient(135deg, rgba(168,85,247,.2), rgba(255,107,43,.12)); border: 1px solid rgba(168,85,247,.3); border-radius: 16px; padding: 16px 18px; margin-bottom: 12px; display: flex; align-items: flex-start; gap: 12px; }
+.motivo-banner-icon { font-size: 24px; flex-shrink: 0; }
+.motivo-banner-text { flex: 1; }
+.motivo-banner-label { font-family: 'Bebas Neue', sans-serif; font-size: 11px; letter-spacing: .1em; color: var(--purple); margin-bottom: 4px; }
+.motivo-banner-msg { font-size: 14px; font-weight: 600; line-height: 1.5; color: var(--text); }
+
+/* SOCIAL (Instagram/LinkedIn style) */
+.social-feed { display: flex; flex-direction: column; gap: 0; }
+.post-card { background: var(--card); border: 1px solid var(--b2); border-radius: 18px; margin-bottom: 12px; overflow: hidden; }
+.post-header { display: flex; align-items: center; gap: 10px; padding: 14px 16px 10px; }
+.post-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--grad-hero); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; border: 2px solid rgba(255,107,43,.3); }
+.post-user { flex: 1; }
+.post-name { font-size: 14px; font-weight: 700; }
+.post-time { font-size: 11px; color: var(--t2); margin-top: 1px; }
+.post-badge { }
+.post-streak-chip { background: rgba(255,107,43,.12); border: 1px solid rgba(255,107,43,.25); border-radius: 99px; padding: 2px 8px; font-size: 11px; font-weight: 700; color: var(--orange2); }
+.post-content { padding: 0 16px 12px; font-size: 14px; line-height: 1.65; color: var(--text); }
+.post-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: var(--card2); display: flex; align-items: center; justify-content: center; font-size: 60px; margin: 0 0 12px; }
+.post-actions { display: flex; align-items: center; gap: 0; padding: 0 8px 12px; border-top: 1px solid var(--b2); padding-top: 10px; }
+.post-action-btn { display: flex; align-items: center; gap: 5px; background: none; border: none; color: var(--t2); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; padding: 6px 10px; border-radius: 9px; transition: all .2s; }
+.post-action-btn:hover { background: var(--b2); color: var(--text); }
+.post-action-btn.liked { color: var(--pink); }
+.post-action-icon { font-size: 16px; }
+.new-post-area { background: var(--card); border: 1px solid var(--b2); border-radius: 18px; padding: 16px; margin-bottom: 14px; }
+.new-post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.new-post-input { width: 100%; background: var(--card2); border: 1px solid var(--b2); border-radius: 12px; padding: 12px 14px; color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; outline: none; resize: none; min-height: 70px; transition: all .2s; }
+.new-post-input:focus { border-color: var(--orange); }
+.new-post-input::placeholder { color: var(--t3); }
+.post-tools { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+.tool-btn { background: var(--card2); border: 1px solid var(--b2); border-radius: 9px; padding: 7px 12px; font-size: 13px; font-weight: 600; color: var(--t2); cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 5px; }
+.tool-btn:hover { border-color: var(--orange); color: var(--text); }
+.connections-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.conn-card { background: var(--card2); border: 1px solid var(--b2); border-radius: 14px; padding: 14px; text-align: center; transition: all .2s; }
+.conn-card:hover { border-color: rgba(255,107,43,.25); }
+.conn-av { font-size: 32px; margin-bottom: 6px; }
+.conn-name { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.conn-sub { font-size: 11px; color: var(--t2); margin-bottom: 8px; }
+.conn-btn { background: var(--grad-hero); color: #fff; border: none; border-radius: 9px; padding: 6px 14px; font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: .04em; cursor: pointer; transition: all .2s; }
+.conn-btn.connected { background: rgba(132,204,22,.15); color: var(--lime); border: 1px solid rgba(132,204,22,.3); }
+
+/* MODO BLOQUEIO */
+.protect-hero { background: linear-gradient(145deg, rgba(239,68,68,.12), rgba(255,61,154,.06)); border: 2px solid rgba(239,68,68,.3); border-radius: 20px; padding: 22px; text-align: center; margin-bottom: 14px; }
+.protect-active { border-color: rgba(132,204,22,.4); background: linear-gradient(145deg, rgba(132,204,22,.1), rgba(34,211,238,.06)); }
+.protect-icon { font-size: 52px; margin-bottom: 8px; filter: drop-shadow(0 0 16px rgba(239,68,68,.4)); }
+.protect-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: .05em; color: var(--red); margin-bottom: 4px; }
+.protect-active .protect-title { color: var(--lime); }
+.protect-sub { font-size: 13px; color: var(--t2); line-height: 1.5; }
+.blocked-site { display: flex; align-items: center; gap: 10px; background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.15); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
+.blocked-site-logo { font-size: 22px; }
+.blocked-site-name { font-size: 14px; font-weight: 700; flex: 1; }
+.blocked-site-status { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 99px; }
+.bs-blocked { background: rgba(239,68,68,.15); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
+.bs-ok { background: rgba(132,204,22,.12); color: var(--lime); border: 1px solid rgba(132,204,22,.25); }
+.toggle-switch { display: flex; align-items: center; justify-content: space-between; background: var(--card2); border: 1px solid var(--b2); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+.toggle-label { font-size: 14px; font-weight: 700; }
+.toggle-sub { font-size: 12px; color: var(--t2); margin-top: 2px; }
+.toggle { width: 44px; height: 24px; border-radius: 99px; background: var(--b2); border: none; cursor: pointer; position: relative; transition: all .3s; flex-shrink: 0; }
+.toggle.on { background: var(--lime); box-shadow: 0 0 12px rgba(132,204,22,.4); }
+.toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: all .3s; box-shadow: 0 2px 4px rgba(0,0,0,.3); }
+.toggle.on::after { left: 23px; }
+.alert-item { display: flex; align-items: flex-start; gap: 10px; background: rgba(255,107,43,.06); border: 1px solid rgba(255,107,43,.15); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
+.alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.alert-text { font-size: 13px; line-height: 1.55; color: var(--text); }
+
+/* TRAVA FOCO */
+.foco-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.97); z-index: 9000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+.foco-overlay.active { display: flex; }
+.foco-icon { font-size: 80px; margin-bottom: 20px; filter: drop-shadow(0 0 30px rgba(255,107,43,.5)); animation: focoPulse 2s ease-in-out infinite; }
+@keyframes focoPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+.foco-title { font-family: 'Bebas Neue', sans-serif; font-size: 48px; letter-spacing: .1em; background: var(--grad-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+.foco-sub { font-size: 15px; color: var(--t2); margin-bottom: 32px; text-align: center; max-width: 280px; line-height: 1.6; }
+.foco-timer { font-family: 'Bebas Neue', sans-serif; font-size: 72px; letter-spacing: .05em; background: var(--grad-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 20px rgba(255,107,43,.3)); line-height: 1; margin-bottom: 8px; }
+.foco-timer-lbl { font-size: 13px; color: var(--t2); margin-bottom: 24px; }
+.foco-actions { display: flex; gap: 10px; }
+.foco-exit-btn { background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3); color: var(--red); font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: .06em; padding: 12px 24px; border-radius: 12px; cursor: pointer; transition: all .2s; }
+.foco-exit-btn:hover { background: rgba(239,68,68,.25); }
+.foco-motivo { background: rgba(168,85,247,.12); border: 1px solid rgba(168,85,247,.25); border-radius: 14px; padding: 16px 20px; text-align: center; max-width: 300px; margin-bottom: 24px; }
+.foco-motivo-lbl { font-size: 11px; color: var(--purple); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px; }
+.foco-motivo-text { font-size: 15px; font-weight: 600; line-height: 1.5; }
+
+/* Alerta recaída */
+.recaida-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 8000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+.recaida-overlay.active { display: flex; }
+.recaida-card { background: var(--deep); border: 2px solid rgba(239,68,68,.4); border-radius: 22px; padding: 28px 24px; max-width: 380px; width: 100%; text-align: center; }
+.recaida-icon { font-size: 56px; margin-bottom: 14px; }
+.recaida-title { font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: .06em; color: var(--red); margin-bottom: 8px; }
+.recaida-text { font-size: 14px; color: var(--t2); line-height: 1.65; margin-bottom: 20px; }
+.recaida-actions { display: flex; flex-direction: column; gap: 8px; }
+
+/* Imagem post placeholder */
+.img-placeholder { width: 100%; height: 160px; background: linear-gradient(135deg, var(--card2), var(--deep)); display: flex; align-items: center; justify-content: center; font-size: 48px; border-radius: 0; }
+
+/* BLOCK REDIRECT */
+.redirect-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.95); z-index: 7000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+.redirect-overlay.active { display: flex; }
+
+/* OBJETIVOS */
+.obj-card { background: var(--card); border: 1px solid var(--b2); border-radius: 18px; padding: 18px; margin-bottom: 12px; position: relative; overflow: hidden; transition: all .3s; }
+.obj-card-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.obj-cat-icon { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.obj-cat-conta   { background: rgba(255,61,154,.12); }
+.obj-cat-bem     { background: rgba(255,107,43,.12); }
+.obj-cat-viagem  { background: rgba(34,211,238,.12); }
+.obj-cat-saude   { background: rgba(132,204,22,.12); }
+.obj-cat-educacao{ background: rgba(168,85,247,.12); }
+.obj-cat-familia { background: rgba(255,210,63,.12); }
+.obj-cat-outro   { background: rgba(255,255,255,.06); }
+.obj-name { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: .03em; }
+.obj-cat-lbl { font-size: 11px; color: var(--t2); margin-top: 2px; }
+.obj-delete { margin-left: auto; background: none; border: none; color: var(--t3); font-size: 18px; cursor: pointer; padding: 4px; border-radius: 8px; transition: all .2s; flex-shrink: 0; }
+.obj-delete:hover { color: var(--pink); background: rgba(255,61,154,.1); }
+.obj-progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.obj-progress-pct { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: .03em; color: var(--orange2); }
+.obj-pbar { height: 10px; background: var(--b2); border-radius: 99px; overflow: hidden; margin-bottom: 12px; }
+.obj-pfill { height: 100%; border-radius: 99px; transition: width .8s ease; }
+.obj-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; }
+.obj-stat { background: var(--card2); border-radius: 10px; padding: 10px 8px; text-align: center; }
+.obj-stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: .02em; color: var(--text); }
+.obj-stat-lbl { font-size: 10px; color: var(--t2); margin-top: 2px; }
+.obj-done-banner { background: linear-gradient(135deg, rgba(132,204,22,.15), rgba(34,211,238,.08)); border: 1px solid rgba(132,204,22,.35); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.obj-countdown { background: linear-gradient(135deg, rgba(255,107,43,.1), rgba(168,85,247,.08)); border: 1px solid rgba(255,107,43,.2); border-radius: 12px; padding: 14px; text-align: center; margin-top: 10px; }
+.obj-countdown-days { font-family: 'Abril Fatface', serif; font-size: 42px; background: var(--grad-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+.obj-countdown-lbl { font-size: 12px; color: var(--t2); margin-top: 4px; }
+.obj-date-est { font-size: 12px; color: var(--lime); font-weight: 700; margin-top: 4px; }
+
+
+/* ── CENTRAL CHECK-IN BUTTON ── */
+.bnav {
+  position: relative;
+}
+.nb-checkin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 6px;
+  position: relative;
+  margin-top: -22px;
+  -webkit-tap-highlight-color: transparent;
+}
+.nb-checkin-ring {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--grad-hero);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 4px var(--night), 0 0 20px rgba(255,107,43,.6), 0 4px 16px rgba(255,61,154,.4);
+  transition: all .25s;
+  animation: checkinPulse 2.5s ease-in-out infinite;
+}
+.nb-checkin-ring.done {
+  background: var(--grad-lime);
+  box-shadow: 0 0 0 4px var(--night), 0 0 20px rgba(132,204,22,.6);
+  animation: none;
+}
+@keyframes checkinPulse {
+  0%,100% { box-shadow: 0 0 0 4px var(--night), 0 0 20px rgba(255,107,43,.6), 0 4px 16px rgba(255,61,154,.4); transform: scale(1); }
+  50%      { box-shadow: 0 0 0 4px var(--night), 0 0 32px rgba(255,107,43,.8), 0 6px 24px rgba(255,61,154,.6); transform: scale(1.06); }
+}
+.nb-checkin-icon {
+  font-size: 24px;
+  color: #fff;
+  font-weight: 900;
+  line-height: 1;
+  transition: all .2s;
+}
+.nb-checkin-lbl {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--orange2);
+  text-align: center;
+  line-height: 1.3;
+  transition: color .3s;
+}
+.nb-checkin.done-state .nb-checkin-lbl {
+  color: var(--lime);
+}
+.nb-checkin:active .nb-checkin-ring {
+  transform: scale(.92);
+}
+
+/* Confetti burst */
+.confetti-burst {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+}
+.confetti-piece {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  animation: confettiFall 1.2s ease-out forwards;
+}
+@keyframes confettiFall {
+  0%   { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+  100% { opacity: 0; transform: translateY(200px) rotate(720deg) scale(.3); }
+}
+
+/* XP pop animation */
+.xp-pop {
+  position: fixed;
+  z-index: 9997;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: .06em;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(255,107,43,.8);
+  pointer-events: none;
+  animation: xpRise 1.4s ease-out forwards;
+}
+@keyframes xpRise {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  60%  { opacity: 1; transform: translateY(-80px) scale(1.1); }
+  100% { opacity: 0; transform: translateY(-140px) scale(.8); }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     AUTH
+═══════════════════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-wrap">
+    <div class="auth-glow">🔄</div>
+    <h1 class="auth-title">TURNMYLIFE</h1>
+    <p class="auth-sub">Substitua o vício por conquistas reais.<br>Seu novo capítulo começa agora.</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuth('login')">Entrar</button>
+      <button class="auth-tab" onclick="switchAuth('register')">Cadastrar</button>
+    </div>
+
+    <div id="login-form" style="width:100%">
+      <div id="motivo-daily-reminder" style="display:none;width:100%;margin-bottom:16px">
+        <div class="motivo-banner">
+          <div class="motivo-banner-icon">💜</div>
+          <div class="motivo-banner-text">
+            <div class="motivo-banner-label">SEU MOTIVO DE HOJE</div>
+            <div class="motivo-banner-msg" id="login-motivo-msg">Você está fazendo isso por quem você ama.</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input class="form-input" id="l-email" type="email" placeholder="seu@email.com">
+        <div class="form-error" id="l-err">E-mail ou senha incorretos.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input class="form-input" id="l-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="auth-btn" onclick="doLogin()">ENTRAR →</button>
+      <p class="auth-note">Demo: <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="6c080901032c18191e02011500050a09420d1c1c">[email&#160;protected]</a></strong> / <strong>123456</strong></p>
+    </div>
+
+    <div id="register-form" style="display:none;width:100%">
+      <div class="form-group">
+        <label class="form-label">Nome completo</label>
+        <input class="form-input" id="r-name" type="text" placeholder="Seu nome">
+        <div class="form-error" id="r-err-name">Preencha seu nome.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input class="form-input" id="r-email" type="email" placeholder="seu@email.com">
+        <div class="form-error" id="r-err-email">E-mail inválido.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input class="form-input" id="r-pass" type="password" placeholder="Mínimo 6 caracteres">
+        <div class="form-error" id="r-err-pass">Mínimo 6 caracteres.</div>
+      </div>
+
+      <!-- MOTIVO DE PARAR -->
+      <div class="motivo-card">
+        <div class="motivo-icon">💜</div>
+        <div class="motivo-lbl">SEU MOTIVO PARA PARAR</div>
+        <div class="motivo-hint" style="margin-bottom:10px">Este será seu lembrete diário. Por quem ou por que você quer mudar?<br><em style="color:var(--t3)">Ex: "Pela minha família", "Pelo meu futuro", "Para recuperar minha saúde"</em></div>
+        <textarea class="form-input" id="r-motivo" placeholder="Escreva seu motivo aqui... (Ex: Pela minha família e filhos)" rows="3"></textarea>
+        <div class="form-error" id="r-err-motivo">Escreva seu motivo — ele será sua força nos momentos difíceis.</div>
+      </div>
+
+      <button class="auth-btn" onclick="doRegister()">CRIAR CONTA GRÁTIS →</button>
+    </div>
+
+    <div class="auth-divider">ou entre sem cadastro</div>
+    <button class="guest-btn" onclick="quickDemo()">🚀 Entrar como visitante</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     APP
+═══════════════════════════════════════════ -->
+<div id="app" style="display:none">
+
+  <div class="topbar">
+    <div class="logo">🔄 TURNMYLIFE</div>
+    <div class="top-right">
+      <div class="chip chip-coins">🪙 <span id="coinDisplay">580</span></div>
+      <div class="chip chip-level">NV.<span id="lvDisplay">5</span></div>
+    </div>
+  </div>
+
+  <div class="content" id="main-content">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="screen active" id="sc-home">
+    <div class="screen-inner">
+
+      <!-- Motivo Banner -->
+      <div class="motivo-banner" id="home-motivo-banner">
+        <div class="motivo-banner-icon">💜</div>
+        <div class="motivo-banner-text">
+          <div class="motivo-banner-label">SEU MOTIVO</div>
+          <div class="motivo-banner-msg" id="home-motivo-msg">Você está fazendo isso pela sua família.</div>
+        </div>
+      </div>
+
+      <div class="hero-card streak-hero">
+        <span class="streak-big" id="streakNum">23</span>
+        <div class="streak-lbl" id="streakLbl">dias sem apostar 🔥</div>
+        <div class="badges-row">
+          <span class="badge bo">✅ 1 dia</span>
+          <span class="badge bo">✅ 7 dias</span>
+          <span class="badge bo">✅ 21 dias</span>
+          <span class="badge bx">🔒 30 dias</span>
+          <span class="badge bx">🔒 100 dias</span>
+        </div>
+      </div>
+
+      <div class="milestones">
+        <div class="ms done"><div class="ms-i">🌱</div><div class="ms-d">1 dia</div></div>
+        <div class="ms done"><div class="ms-i">🌿</div><div class="ms-d">7 dias</div></div>
+        <div class="ms done"><div class="ms-i">🌳</div><div class="ms-d">21 dias</div></div>
+        <div class="ms"><div class="ms-i">🏆</div><div class="ms-d">30 dias</div></div>
+        <div class="ms"><div class="ms-i">💎</div><div class="ms-d">60 dias</div></div>
+        <div class="ms"><div class="ms-i">👑</div><div class="ms-d">100 dias</div></div>
+      </div>
+
+      <div class="xp-box">
+        <div class="xp-top">
+          <div>
+            <div style="font-size:11px;color:var(--t2);text-transform:uppercase;letter-spacing:.8px">Experiência</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.03em" id="xpTxt">2.850 / 4.000 XP</div>
+          </div>
+          <div class="lv-pill">NÍVEL 5 — EM RECUPERAÇÃO</div>
+        </div>
+        <div class="pbar"><div class="pfill" id="xpFill" style="width:71%"></div></div>
+      </div>
+
+      <div class="stats3">
+        <div class="stat-c"><div class="stat-n" id="dashStreak">23</div><div class="stat-l">Dias streak</div></div>
+        <div class="stat-c"><div class="stat-n" id="dashCourses">3</div><div class="stat-l">Cursos</div></div>
+        <div class="stat-c"><div class="stat-n" id="dashCoins">580</div><div class="stat-l">Moedas</div></div>
+      </div>
+
+      <!-- Cofre Resumo -->
+      <div class="card" style="background:linear-gradient(145deg,rgba(255,210,63,.08),rgba(132,204,22,.05));border-color:rgba(255,210,63,.2)">
+        <div class="clabel">🏦 Dinheiro que você deixou de perder</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div class="money-saved-big" id="home-cofre-val">R$ 0</div>
+            <div style="font-size:12px;color:var(--t2);margin-top:2px">guardados no seu cofre virtual</div>
+          </div>
+          <button class="btn btn-sm btn-outline" onclick="nav('cofre')" style="width:auto">Ver cofre →</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="clabel">🎮 Jogos de hoje</div>
+        <div class="games-grid" style="margin-bottom:0">
+          <div class="game-card gc-orange" onclick="openGame('puzzle')"><div class="g-icon">🎨</div><div class="g-name">Puzzle das Cores</div><div class="g-reward">+30 🪙</div><div class="g-sub">3 rodadas restantes</div></div>
+          <div class="game-card gc-purple" onclick="openGame('quiz')"><div class="g-icon">⚡</div><div class="g-name">Quiz Relâmpago</div><div class="g-reward">+50 🪙</div><div class="g-sub">2 rodadas restantes</div></div>
+          <div class="game-card gc-cyan" onclick="openGame('maze')"><div class="g-icon">🧩</div><div class="g-name">Labirinto</div><div class="g-reward">+40 🪙</div><div class="g-sub">Ilimitado</div></div>
+          <div class="game-card gc-lime" onclick="openGame('budget')"><div class="g-icon">📊</div><div class="g-name">Orçamento</div><div class="g-reward">+35 🪙</div><div class="g-sub">Ilimitado</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="clabel">📚 Continue estudando</div>
+        <div class="mod-item done" onclick="nav('cursos')">
+          <div class="mod-num">✓</div>
+          <div><div style="font-size:14px;font-weight:600">Módulo 1 — Finanças Pessoais</div><div style="font-size:12px;color:var(--t2)">Concluído • 10 min</div></div>
+        </div>
+        <div class="mod-item" style="border-color:rgba(255,107,43,.3);background:rgba(255,107,43,.06)" onclick="nav('cursos')">
+          <div class="mod-num" style="background:var(--orange);color:#fff">2</div>
+          <div><div style="font-size:14px;font-weight:600">Módulo 2 — Orçamento e Poupança</div><div style="font-size:12px;color:var(--t2)">Em andamento • 8 min</div></div>
+        </div>
+      </div>
+
+      <div class="dyk-card">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.06em;color:var(--purple);margin-bottom:6px">💡 VOCÊ SABIA?</div>
+        <div id="dyk" style="font-size:14px;line-height:1.65"></div>
+      </div>
+
+
+      <button class="btn btn-red" style="margin-top:8px" onclick="showRecaida()">⚠️ ESTOU EM RISCO DE RECAÍDA</button>
+    </div>
+    </div>
+
+    <!-- ── CURSOS ── -->
+    <div class="screen" id="sc-cursos">
+    <div class="screen-inner">
+      <div class="sh"><h2>📚 CURSOS</h2><p>Aprenda, evolua e ganhe certificados gratuitos</p></div>
+
+      <div class="course-card cc1" onclick="openCourse('financas')">
+        <div class="c-head">
+          <div class="c-icon" style="background:rgba(255,107,43,.15)">💰</div>
+          <div><div class="c-title">Finanças Pessoais Básicas</div><div class="c-src">Fundação Bradesco • 3 módulos</div></div>
+        </div>
+        <div class="c-tags"><span class="badge bo">Gratuito</span><span class="badge bc">Certificado</span><span class="badge by">+200 🪙</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--t2)">Progresso</span><span style="font-size:13px;font-weight:700;color:var(--orange2)" id="fp1">67%</span></div>
+        <div class="pbar"><div class="pfill" id="fb1" style="width:67%"></div></div>
+      </div>
+
+      <div class="course-card cc2" onclick="openCourse('produtividade')">
+        <div class="c-head">
+          <div class="c-icon" style="background:rgba(168,85,247,.15)">🧠</div>
+          <div><div class="c-title">Produtividade e Hábitos</div><div class="c-src">Khan Academy • 2 módulos</div></div>
+        </div>
+        <div class="c-tags"><span class="badge bo">Gratuito</span><span class="badge bc">Certificado</span><span class="badge by">+150 🪙</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--t2)">Progresso</span><span style="font-size:13px;font-weight:700;color:var(--orange2)" id="fp2">100%</span></div>
+        <div class="pbar"><div class="pfill" id="fb2" style="width:100%"></div></div>
+      </div>
+
+      <div class="course-card cc3" onclick="openCourse('marketing')">
+        <div class="c-head">
+          <div class="c-icon" style="background:rgba(34,211,238,.12)">🚀</div>
+          <div><div class="c-title">Marketing Digital</div><div class="c-src">MIT OpenCourseWare • 2 módulos</div></div>
+        </div>
+        <div class="c-tags"><span class="badge bo">Gratuito</span><span class="badge bc">Certificado</span><span class="badge by">+180 🪙</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--t2)">Progresso</span><span style="font-size:13px;font-weight:700;color:var(--orange2)" id="fp3">0%</span></div>
+        <div class="pbar"><div class="pfill" id="fb3" style="width:0%"></div></div>
+      </div>
+
+      <div class="course-card cc4" onclick="openCourse('empreender')">
+        <div class="c-head">
+          <div class="c-icon" style="background:rgba(255,210,63,.12)">💼</div>
+          <div><div class="c-title">Empreendedorismo Básico</div><div class="c-src">SEBRAE • 4 módulos</div></div>
+        </div>
+        <div class="c-tags"><span class="badge bo">Gratuito</span><span class="badge bc">Certificado</span><span class="badge by">+250 🪙</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--t2)">Progresso</span><span style="font-size:13px;font-weight:700;color:var(--orange2)" id="fp4">25%</span></div>
+        <div class="pbar"><div class="pfill" id="fb4" style="width:25%"></div></div>
+      </div>
+
+      <!-- TRAVA FOCO -->
+      <div class="card" style="background:linear-gradient(145deg,rgba(255,107,43,.1),rgba(168,85,247,.06));border-color:rgba(255,107,43,.25)">
+        <div class="clabel">✈️ MODO FOCO — TRAVA DE ESTUDO</div>
+        <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:14px">Ative o modo avião de estudo: o app bloqueia tudo e você estuda sem distrações. O celular fica completamente focado no curso.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-sm" onclick="startFoco(25)" style="width:auto">✈️ Foco 25min</button>
+          <button class="btn btn-sm btn-purple" onclick="startFoco(45)" style="width:auto">🧠 Foco 45min</button>
+          <button class="btn btn-sm btn-cyan" onclick="startFoco(60)" style="width:auto">💪 Foco 60min</button>
+        </div>
+      </div>
+
+      <!-- RANKING -->
+      <div class="card">
+        <div class="clabel">🏆 Ranking de estudantes</div>
+        <div class="rank-card"><div class="rank-n">1</div><div class="rank-av">🦁</div><div class="rank-info"><div class="rank-name">Carlos Lima</div><div class="rank-sub">45 dias • Nível 8</div></div><div class="rank-score">4.500 XP</div></div>
+        <div class="rank-card"><div class="rank-n">2</div><div class="rank-av">🦅</div><div class="rank-info"><div class="rank-name">Ana Beatriz</div><div class="rank-sub">38 dias • Nível 7</div></div><div class="rank-score">3.900 XP</div></div>
+        <div class="rank-card me" id="rankCard"><div class="rank-n">3</div><div class="rank-av" id="rankAvatar">🦁</div><div class="rank-info"><div class="rank-name" id="rankName">João Silva</div><div class="rank-sub" id="rankSub">23 dias • Nível 5</div></div><div class="rank-score" id="rankScore">2.850 XP</div></div>
+        <div class="rank-card"><div class="rank-n">4</div><div class="rank-av">🐉</div><div class="rank-info"><div class="rank-name">Pedro Alves</div><div class="rank-sub">18 dias • Nível 4</div></div><div class="rank-score">2.100 XP</div></div>
+        <div class="rank-card"><div class="rank-n">5</div><div class="rank-av">🦊</div><div class="rank-info"><div class="rank-name">Maria Santos</div><div class="rank-sub">15 dias • Nível 3</div></div><div class="rank-score">1.650 XP</div></div>
+      </div>
+
+      <button class="btn btn-purple" onclick="shareWin()">✨ COMPARTILHAR MINHA CONQUISTA (+30 🪙)</button>
+    </div>
+    </div>
+
+    <!-- ── COFRE VIRTUAL ── -->
+    <div class="screen" id="sc-cofre">
+    <div class="screen-inner">
+      <div class="sh"><h2>🏦 COFRE VIRTUAL</h2><p>Guarde o dinheiro que você deixou de perder</p></div>
+
+      <div class="deposit-hero">
+        <div style="font-size:12px;color:var(--t2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Dinheiro guardado total</div>
+        <div class="deposit-balance" id="depositBalance">R$ 0,00</div>
+        <div class="deposit-lbl">Em <span id="depositDays">0</span> dias de jornada</div>
+        <div class="dep-saved" id="dep-saved-msg" style="display:none">
+          🎉 Cada centavo aqui é uma vitória sua!
+        </div>
+      </div>
+
+      <!-- Metas do Cofre -->
+      <div class="cofre-section">
+        <div class="clabel">🎯 METAS DE POUPANÇA</div>
+        <div class="cofre-milestones" id="cofre-milestones">
+          <div class="cofre-ms" id="cm-7"><div class="cofre-ms-day">7 dias</div><div class="cofre-ms-info"><div class="cofre-ms-title">Primeira semana</div><div class="cofre-ms-sub">Guarde R$ 20 para marcar a conquista</div></div><div class="cofre-ms-val">R$ 20</div></div>
+          <div class="cofre-ms" id="cm-14"><div class="cofre-ms-day">14 dias</div><div class="cofre-ms-info"><div class="cofre-ms-title">Duas semanas</div><div class="cofre-ms-sub">Você está crescendo!</div></div><div class="cofre-ms-val">R$ 50</div></div>
+          <div class="cofre-ms" id="cm-30"><div class="cofre-ms-day">30 dias</div><div class="cofre-ms-info"><div class="cofre-ms-title">Um mês inteiro</div><div class="cofre-ms-sub">Meta: R$ 100 no cofre</div></div><div class="cofre-ms-val">R$ 100</div></div>
+          <div class="cofre-ms" id="cm-60"><div class="cofre-ms-day">60 dias</div><div class="cofre-ms-info"><div class="cofre-ms-title">Dois meses forte</div><div class="cofre-ms-sub">R$ 250 guardados</div></div><div class="cofre-ms-val">R$ 250</div></div>
+          <div class="cofre-ms" id="cm-90"><div class="cofre-ms-day">90 dias</div><div class="cofre-ms-info"><div class="cofre-ms-title">Três meses — você venceu!</div><div class="cofre-ms-sub">Meta: R$ 500 no cofre</div></div><div class="cofre-ms-val">R$ 500</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="clabel">Adicionar valor poupado</div>
+        <div class="inp-money">
+          <div class="money-pfx">R$</div>
+          <input class="money-inp" type="number" id="depInput" placeholder="0">
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+          <button class="btn btn-sm btn-outline" onclick="quickDep(20)">R$ 20</button>
+          <button class="btn btn-sm btn-outline" onclick="quickDep(50)">R$ 50</button>
+          <button class="btn btn-sm btn-outline" onclick="quickDep(100)">R$ 100</button>
+          <button class="btn btn-sm btn-outline" onclick="quickDep(200)">R$ 200</button>
+          <button class="btn btn-sm btn-outline" onclick="quickDep(500)">R$ 500</button>
+        </div>
+        <button class="btn btn-cyan" onclick="doDeposit()">💰 REGISTRAR VALOR POUPADO</button>
+      </div>
+
+      <div class="card" id="historyCard" style="display:none">
+        <div class="clabel">📋 Histórico</div>
+        <div id="depHistory"></div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--b2);display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:14px;font-weight:600">Total acumulado</span>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.03em;color:var(--cyan)" id="depTotal">R$ 0,00</span>
+        </div>
+        <button class="btn" style="margin-top:12px" onclick="nav('realidade')">👁 VER O QUE ISSO PODERIA COMPRAR →</button>
+      </div>
+    </div>
+    </div>
+
+    <!-- ── REALIDADE ── -->
+    <div class="screen" id="sc-realidade">
+    <div class="screen-inner">
+      <div class="sh"><h2>💔 REALIDADE DAS APOSTAS</h2><p>O que seu dinheiro poderia ter comprado</p></div>
+
+      <div class="reality-hero">
+        <div class="reality-title">❌ PERDIDO EM APOSTAS</div>
+        <div class="reality-loss" id="realityAmt">R$ 0</div>
+        <div class="reality-sub" id="realitySub">Registre um valor no cofre para ver o impacto</div>
+      </div>
+
+      <div id="purchases-section" style="display:none">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.08em;color:var(--t2);margin-bottom:10px">COM ESSE DINHEIRO VOCÊ PODERIA TER...</div>
+        <div id="purchasesList"></div>
+        <div class="warn-box">
+          <div class="warn-title">⚠️ FATOS SOBRE APOSTAS ONLINE NO BRASIL</div>
+          <div class="warn-row"><span class="warn-icon">🎰</span><span>A banca <strong>sempre ganha</strong> no longo prazo — a matemática não mente.</span></div>
+          <div class="warn-row"><span class="warn-icon">📉</span><span><strong>87% dos apostadores</strong> perdem dinheiro de forma consistente.</span></div>
+          <div class="warn-row"><span class="warn-icon">🧠</span><span>Apostas ativam o <strong>mesmo circuito cerebral</strong> do vício em drogas.</span></div>
+          <div class="warn-row"><span class="warn-icon">💸</span><span>Brasileiros perdem em média <strong>R$ 2.800/ano</strong> em plataformas online.</span></div>
+          <div class="warn-row"><span class="warn-icon">🏠</span><span>1 em 3 viciados relata <strong>dívidas graves</strong> ou perda de bens materiais.</span></div>
+        </div>
+        <div style="background:linear-gradient(135deg,rgba(255,107,43,.1),rgba(168,85,247,.08));border:1px solid rgba(255,107,43,.2);border-radius:16px;padding:22px;margin-top:14px;text-align:center">
+          <div style="font-size:32px;margin-bottom:10px">🌅</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.05em;background:var(--grad-hero);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px">VOCÊ ESTÁ FAZENDO A MUDANÇA CERTA</div>
+          <div style="font-size:14px;color:var(--t2);line-height:1.65">Cada dia sem apostar é um investimento em si mesmo.<br>Continue. Sua virada de jogo já começou.</div>
+          <button class="btn" style="margin-top:16px" onclick="nav('home')">CONTINUAR MINHA JORNADA →</button>
+        </div>
+      </div>
+
+      <div id="no-dep-msg" style="text-align:center;padding:40px 0">
+        <div style="font-size:52px;margin-bottom:12px">💰</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.05em;background:var(--grad-hero);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px">ADICIONE UM VALOR NO COFRE</div>
+        <div style="font-size:14px;color:var(--t2);margin-bottom:20px">Registre quanto você apostava por mês<br>para ver o impacto real na sua vida</div>
+        <button class="btn btn-sm btn-outline" onclick="nav('cofre')" style="width:auto">Ir ao cofre →</button>
+      </div>
+    </div>
+    </div>
+
+    <!-- ── PROTEÇÃO ── -->
+    <div class="screen" id="sc-protecao">
+    <div class="screen-inner">
+      <div class="sh"><h2>🛑 MODO PROTEÇÃO</h2><p>Bloqueie o acesso a sites de apostas</p></div>
+
+      <div class="protect-hero" id="protect-hero">
+        <div class="protect-icon" id="protect-icon">🛡️</div>
+        <div class="protect-title" id="protect-title">PROTEÇÃO DESATIVADA</div>
+        <div class="protect-sub" id="protect-sub">Ative o modo proteção para bloquear automaticamente os sites de apostas e receber alertas em momentos de risco.</div>
+        <button class="btn" style="margin-top:16px" onclick="toggleProtection()" id="protect-toggle-btn">🛑 ATIVAR MODO PROTEÇÃO</button>
+      </div>
+
+      <div class="card">
+        <div class="clabel">🚫 SITES BLOQUEADOS</div>
+        <div id="sites-list">
+          <div class="blocked-site"><div class="blocked-site-logo">🎲</div><div class="blocked-site-name">Bet365</div><div class="blocked-site-status bs-ok" id="bs-bet365">Permitido</div></div>
+          <div class="blocked-site"><div class="blocked-site-logo">⚽</div><div class="blocked-site-name">Betano</div><div class="blocked-site-status bs-ok" id="bs-betano">Permitido</div></div>
+          <div class="blocked-site"><div class="blocked-site-logo">🎯</div><div class="blocked-site-name">Sportingbet</div><div class="blocked-site-status bs-ok" id="bs-sport">Permitido</div></div>
+          <div class="blocked-site"><div class="blocked-site-logo">🃏</div><div class="blocked-site-name">Brazino</div><div class="blocked-site-status bs-ok" id="bs-braz">Permitido</div></div>
+          <div class="blocked-site"><div class="blocked-site-logo">🎰</div><div class="blocked-site-name">KTO</div><div class="blocked-site-status bs-ok" id="bs-kto">Permitido</div></div>
+          <div class="blocked-site"><div class="blocked-site-logo">⚡</div><div class="blocked-site-name">Novibet</div><div class="blocked-site-status bs-ok" id="bs-novi">Permitido</div></div>
+          <div class="blocked-site"><div class="blocked-site-logo">🏟️</div><div class="blocked-site-name">SuperBet</div><div class="blocked-site-status bs-ok" id="bs-super">Permitido</div></div>
+          <div class="blocked-site"><div class="blocked-site-logo">🎮</div><div class="blocked-site-name">Todas as apostas</div><div class="blocked-site-status bs-ok" id="bs-all">Permitido</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="clabel">⚙️ CONFIGURAÇÕES DE ALERTAS</div>
+        <div class="toggle-switch">
+          <div><div class="toggle-label">🔔 Aviso de redirecionamento</div><div class="toggle-sub">Alerta ao tentar acessar site de apostas</div></div>
+          <button class="toggle on" id="tog-redirect" onclick="toggleOpt('redirect')"></button>
+        </div>
+        <div class="toggle-switch">
+          <div><div class="toggle-label">⏰ Alerta noturno</div><div class="toggle-sub">Lembrete às 22h dos seus dias sem apostas</div></div>
+          <button class="toggle on" id="tog-night" onclick="toggleOpt('night')"></button>
+        </div>
+        <div class="toggle-switch">
+          <div><div class="toggle-label">🚨 Alerta de recaída</div><div class="toggle-sub">Detecta padrões de comportamento de risco</div></div>
+          <button class="toggle on" id="tog-recaida" onclick="toggleOpt('recaida')"></button>
+        </div>
+        <div class="toggle-switch">
+          <div><div class="toggle-label">💜 Lembrete do motivo</div><div class="toggle-sub">Exibe seu motivo diariamente na tela de login</div></div>
+          <button class="toggle on" id="tog-motivo" onclick="toggleOpt('motivo')"></button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="clabel">📢 ALERTAS DE RECAÍDA</div>
+        <div class="alert-item"><div class="alert-icon">⚠️</div><div class="alert-text">Se você tentar acessar um site de apostas, o app vai exibir uma tela de redirecionamento com seu motivo e streak atual.</div></div>
+        <div class="alert-item"><div class="alert-icon">🧠</div><div class="alert-text">Nos primeiros 90 dias, o risco de recaída é mais alto. O app monitora seu comportamento e envia alertas preventivos.</div></div>
+        <div class="alert-item"><div class="alert-icon">💬</div><div class="alert-text">Em caso de crise, você pode acessar o suporte da comunidade diretamente pelo botão de emergência na tela inicial.</div></div>
+        <button class="btn" style="margin-top:4px" onclick="simulateBlock()">🧪 SIMULAR BLOQUEIO DE SITE</button>
+      </div>
+
+      <div class="card">
+        <div class="clabel">📞 AJUDA PROFISSIONAL</div>
+        <div style="font-size:13px;color:var(--t2);line-height:1.65;margin-bottom:12px">Se você sentir que precisa de ajuda, não hesite em contatar profissionais especializados em dependência.</div>
+        <div class="alert-item" style="background:rgba(34,211,238,.06);border-color:rgba(34,211,238,.15)"><div class="alert-icon">📱</div><div class="alert-text"><strong>CVV — Centro de Valorização da Vida:</strong> Ligue 188 (24h, gratuito)</div></div>
+        <div class="alert-item" style="background:rgba(132,204,22,.06);border-color:rgba(132,204,22,.15)"><div class="alert-icon">🏥</div><div class="alert-text"><strong>CAPS — Centro de Atenção Psicossocial:</strong> Atendimento gratuito pelo SUS</div></div>
+      </div>
+    </div>
+    </div>
+
+
+    <!-- ── MEUS OBJETIVOS ── -->
+    <div class="screen" id="sc-objetivos">
+    <div class="screen-inner">
+      <div class="sh"><h2>🎯 MEUS OBJETIVOS</h2><p>Transforme o que você deixou de perder em conquistas reais</p></div>
+
+      <!-- Configurar apostas -->
+      <div class="card" id="obj-config-card">
+        <div class="clabel">💸 QUANTO VOCÊ APOSTAVA?</div>
+        <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:14px">Defina quanto você costumava gastar em apostas. Usaremos isso para calcular seu progresso real.</div>
+        <div style="display:flex;gap:10px;margin-bottom:10px;align-items:center">
+          <div style="flex:1">
+            <label class="form-label">Valor apostado</label>
+            <div class="inp-money" style="margin-bottom:0">
+              <div class="money-pfx">R$</div>
+              <input class="money-inp" type="number" id="obj-valor" placeholder="0" style="font-size:22px">
+            </div>
+          </div>
+          <div style="flex:0 0 auto;margin-top:18px">
+            <label class="form-label">Frequência</label>
+            <select id="obj-freq" style="background:var(--card2);border:1px solid var(--b2);border-radius:12px;padding:13px 14px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;outline:none;width:130px">
+              <option value="dia">Por dia</option>
+              <option value="semana" selected>Por semana</option>
+              <option value="mes">Por mês</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-lime" onclick="saveApostaConfig()" style="margin-top:4px">✅ SALVAR MINHA REALIDADE</button>
+      </div>
+
+      <!-- Resumo economia -->
+      <div id="obj-economia" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <div class="stat-c" style="background:linear-gradient(145deg,rgba(132,204,22,.1),rgba(132,204,22,.03));border-color:rgba(132,204,22,.25)">
+            <div class="stat-n" style="font-size:22px" id="obj-eco-dia">R$ 0</div>
+            <div class="stat-l">Economizado hoje</div>
+          </div>
+          <div class="stat-c" style="background:linear-gradient(145deg,rgba(34,211,238,.1),rgba(34,211,238,.03));border-color:rgba(34,211,238,.25)">
+            <div class="stat-n" style="font-size:22px" id="obj-eco-total">R$ 0</div>
+            <div class="stat-l">Total economizado</div>
+          </div>
+        </div>
+        <div class="card" style="background:linear-gradient(145deg,rgba(255,107,43,.08),rgba(168,85,247,.05));border-color:rgba(255,107,43,.2);text-align:center;padding:14px">
+          <div style="font-size:11px;color:var(--t2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Você economiza por dia</div>
+          <div style="font-family:'Abril Fatface',serif;font-size:32px;background:var(--grad-hero);-webkit-background-clip:text;-webkit-text-fill-color:transparent" id="obj-por-dia">R$ 0</div>
+          <button class="btn btn-sm btn-outline" onclick="editApostaConfig()" style="margin-top:10px;width:auto">✏️ Editar</button>
+        </div>
+      </div>
+
+      <!-- Adicionar meta -->
+      <div class="card" id="obj-add-card" style="display:none">
+        <div class="clabel">➕ NOVA META</div>
+        <div class="form-group" style="margin-bottom:10px">
+          <label class="form-label">Nome da meta</label>
+          <input class="form-input" id="obj-nome" placeholder="Ex: Pagar a fatura do cartão, Comprar um tênis...">
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <div style="flex:1">
+            <label class="form-label">Categoria</label>
+            <select id="obj-cat" style="width:100%;background:var(--card2);border:1px solid var(--b2);border-radius:12px;padding:13px 14px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;outline:none">
+              <option value="conta">💳 Conta a pagar</option>
+              <option value="bem">🛍️ Aquisição de bem</option>
+              <option value="viagem">✈️ Viagem</option>
+              <option value="saude">🏥 Saúde</option>
+              <option value="educacao">📚 Educação</option>
+              <option value="familia">👨‍👩‍👧 Família</option>
+              <option value="outro">🎯 Outro</option>
+            </select>
+          </div>
+          <div style="flex:1">
+            <label class="form-label">Valor (R$)</label>
+            <input class="form-input" id="obj-meta-val" type="number" placeholder="0,00">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <button class="btn btn-sm btn-outline" onclick="fillMeta(150,'Tênis novo','bem')">👟 R$ 150</button>
+          <button class="btn btn-sm btn-outline" onclick="fillMeta(500,'Conta de luz','conta')">⚡ R$ 500</button>
+          <button class="btn btn-sm btn-outline" onclick="fillMeta(1200,'Aluguel','conta')">🏠 R$ 1.200</button>
+          <button class="btn btn-sm btn-outline" onclick="fillMeta(2500,'Celular novo','bem')">📱 R$ 2.500</button>
+          <button class="btn btn-sm btn-outline" onclick="fillMeta(5000,'Viagem família','viagem')">✈️ R$ 5.000</button>
+        </div>
+        <button class="btn" onclick="addObjetivo()">🎯 ADICIONAR META</button>
+      </div>
+
+      <!-- Lista de metas -->
+      <div id="obj-lista"></div>
+
+      <!-- Empty state -->
+      <div id="obj-empty" style="text-align:center;padding:32px 0;display:none">
+        <div style="font-size:52px;margin-bottom:12px">🎯</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;background:var(--grad-hero);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px">ADICIONE SUA PRIMEIRA META</div>
+        <div style="font-size:13px;color:var(--t2)">Defina quanto apostava e crie uma meta.<br>O app calcula em quanto tempo você chega lá.</div>
+      </div>
+
+    </div>
+    </div>
+
+    <!-- ── SOCIAL ── -->
+    <div class="screen" id="sc-social">
+    <div class="screen-inner">
+      <div class="sh"><h2>👥 COMUNIDADE</h2><p>Conecte-se com quem entende sua jornada</p></div>
+
+      <!-- Nova postagem -->
+      <div class="new-post-area">
+        <div class="new-post-header">
+          <div class="post-avatar" id="social-my-avatar">🦁</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700" id="social-my-name">João Silva</div>
+            <div style="font-size:11px;color:var(--t2)">Compartilhe sua conquista hoje</div>
+          </div>
+        </div>
+        <textarea class="new-post-input" id="new-post-text" placeholder="O que você está sentindo hoje? Compartilhe sua jornada com a comunidade..."></textarea>
+        <div class="post-tools">
+          <button class="tool-btn" onclick="addPhoto()">📷 Foto</button>
+          <button class="tool-btn" onclick="addStreak()">🔥 Streak</button>
+          <button class="tool-btn" onclick="addMotivo()">💜 Motivo</button>
+          <button class="btn btn-sm" style="margin-left:auto;width:auto" onclick="publishPost()">Publicar</button>
+        </div>
+      </div>
+
+      <!-- Feed de posts -->
+      <div class="social-feed" id="social-feed">
+
+        <div class="post-card">
+          <div class="post-header">
+            <div class="post-avatar">🦅</div>
+            <div class="post-user">
+              <div class="post-name">Ana Beatriz</div>
+              <div class="post-time">2h atrás · <span class="post-streak-chip">🔥 38 dias</span></div>
+            </div>
+          </div>
+          <div class="img-placeholder">🌅</div>
+          <div class="post-content">
+            Hoje completei <strong>38 dias sem apostas</strong>! 🎉 Quem diria que conseguiria chegar até aqui.<br><br>
+            Quando comecei, devia mais de R$ 8.000. Hoje já quitei metade da dívida e estou conseguindo dormir tranquila. Obrigada à comunidade por todo o apoio 💜
+          </div>
+          <div class="post-actions">
+            <button class="post-action-btn" onclick="likePost(this)"><span class="post-action-icon">❤️</span><span>124</span></button>
+            <button class="post-action-btn" onclick="commentPost(this)"><span class="post-action-icon">💬</span><span>18</span></button>
+            <button class="post-action-btn" onclick="sharePost(this)" style="margin-left:auto"><span class="post-action-icon">↗️</span><span>Apoiar</span></button>
+          </div>
+        </div>
+
+        <div class="post-card">
+          <div class="post-header">
+            <div class="post-avatar">🐉</div>
+            <div class="post-user">
+              <div class="post-name">Pedro Alves</div>
+              <div class="post-time">5h atrás · <span class="post-streak-chip">🔥 18 dias</span></div>
+            </div>
+          </div>
+          <div class="post-content">
+            Momento difícil hoje. Recebi uma notificação de uma casa de apostas com "bônus exclusivo" e por um segundo senti o impulso. 😔<br><br>
+            Mas aí abri o TurnMyLife e vi meu streak de 18 dias. Não vou perder isso agora. Se alguém mais estiver passando por um momento assim, fiquem fortes! 💪
+          </div>
+          <div class="post-actions">
+            <button class="post-action-btn" onclick="likePost(this)"><span class="post-action-icon">❤️</span><span>89</span></button>
+            <button class="post-action-btn" onclick="commentPost(this)"><span class="post-action-icon">💬</span><span>31</span></button>
+            <button class="post-action-btn" onclick="sharePost(this)" style="margin-left:auto"><span class="post-action-icon">↗️</span><span>Apoiar</span></button>
+          </div>
+        </div>
+
+        <div class="post-card">
+          <div class="post-header">
+            <div class="post-avatar">🦁</div>
+            <div class="post-user">
+              <div class="post-name">Carlos Lima</div>
+              <div class="post-time">1 dia atrás · <span class="post-streak-chip">🔥 45 dias</span></div>
+            </div>
+          </div>
+          <div class="img-placeholder">💰</div>
+          <div class="post-content">
+            Guardei R$ 350 no cofre este mês! Antes eu gastava isso em apostas em um fim de semana. Olha a diferença 👆<br><br>
+            Minha filha vai ganhar um presente do papai este mês. Esse é meu motivo. Ela é meu motivo. 👨‍👧
+          </div>
+          <div class="post-actions">
+            <button class="post-action-btn" onclick="likePost(this)"><span class="post-action-icon">❤️</span><span>213</span></button>
+            <button class="post-action-btn" onclick="commentPost(this)"><span class="post-action-icon">💬</span><span>45</span></button>
+            <button class="post-action-btn" onclick="sharePost(this)" style="margin-left:auto"><span class="post-action-icon">↗️</span><span>Apoiar</span></button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Conexões -->
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.05em;margin:8px 0 12px;background:var(--grad-hero);-webkit-background-clip:text;-webkit-text-fill-color:transparent">PESSOAS QUE VOCÊ PODE CONHECER</div>
+      <div class="connections-grid">
+        <div class="conn-card"><div class="conn-av">🦊</div><div class="conn-name">Maria Santos</div><div class="conn-sub">🔥 15 dias · Nível 3</div><button class="conn-btn" onclick="connect(this)">Conectar</button></div>
+        <div class="conn-card"><div class="conn-av">🧙</div><div class="conn-name">Lucas Costa</div><div class="conn-sub">🔥 60 dias · Nível 6</div><button class="conn-btn" onclick="connect(this)">Conectar</button></div>
+        <div class="conn-card"><div class="conn-av">🦸</div><div class="conn-name">Fernanda Lima</div><div class="conn-sub">🔥 29 dias · Nível 5</div><button class="conn-btn" onclick="connect(this)">Conectar</button></div>
+        <div class="conn-card"><div class="conn-av">🐯</div><div class="conn-name">Rafael Gomes</div><div class="conn-sub">🔥 7 dias · Nível 2</div><button class="conn-btn" onclick="connect(this)">Conectar</button></div>
+      </div>
+    </div>
+    </div>
+
+    <!-- ── PERFIL ── -->
+    <div class="screen" id="sc-perfil">
+    <div class="screen-inner">
+      <div class="profile-hero">
+        <div class="profile-av" id="profAv">🦁</div>
+        <div class="profile-name" id="profName">João Silva</div>
+        <div class="lv-pill-lg">NÍVEL 5 — EM RECUPERAÇÃO</div>
+        <div class="stats3" style="margin-top:16px;margin-bottom:0">
+          <div class="stat-c"><div class="stat-n" id="profStreak">23</div><div class="stat-l">Dias streak</div></div>
+          <div class="stat-c"><div class="stat-n" id="profCerts">2</div><div class="stat-l">Certificados</div></div>
+          <div class="stat-c"><div class="stat-n" id="profCoins">580</div><div class="stat-l">Moedas</div></div>
+        </div>
+      </div>
+
+      <!-- Motivo no perfil -->
+      <div class="card" style="background:linear-gradient(135deg,rgba(168,85,247,.1),rgba(255,107,43,.06));border-color:rgba(168,85,247,.25)">
+        <div class="clabel">💜 MEU MOTIVO</div>
+        <div id="profile-motivo-text" style="font-size:15px;font-weight:600;line-height:1.6;margin-bottom:12px;color:var(--text)">Pela minha família e meu futuro.</div>
+        <button class="btn btn-sm btn-outline" style="width:auto" onclick="editMotivo()">✏️ Editar motivo</button>
+      </div>
+
+      <div class="card">
+        <div class="clabel">🎭 Avatar</div>
+        <div class="av-grid" id="avatarGrid">
+          <span class="av-opt sel" onclick="setAv('🦁',this)">🦁</span>
+          <span class="av-opt" onclick="setAv('🐯',this)">🐯</span>
+          <span class="av-opt" onclick="setAv('🦅',this)">🦅</span>
+          <span class="av-opt" onclick="setAv('🐉',this)">🐉</span>
+          <span class="av-opt" onclick="setAv('🦊',this)">🦊</span>
+          <span class="av-opt" onclick="setAv('🐺',this)">🐺</span>
+          <span class="av-opt" onclick="setAv('🦸',this)">🦸</span>
+          <span class="av-opt" onclick="setAv('🧙',this)">🧙</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="clabel">🏅 Badges conquistados</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          <span class="badge bo" style="padding:5px 12px">🌱 Primeiro dia</span>
+          <span class="badge bo" style="padding:5px 12px">🔥 7 dias</span>
+          <span class="badge bo" style="padding:5px 12px">🌿 21 dias</span>
+          <span class="badge by" style="padding:5px 12px">📚 3 cursos</span>
+          <span class="badge bp" style="padding:5px 12px">⚡ Quiz master</span>
+          <span class="badge bc" style="padding:5px 12px">🧠 Estudioso</span>
+          <span class="badge bx" style="padding:5px 12px;opacity:.5">🔒 30 dias</span>
+          <span class="badge bx" style="padding:5px 12px;opacity:.5">🔒 100 dias</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="clabel">📜 Meus certificados</div>
+        <div class="cert-card" onclick="viewCert('Produtividade e Hábitos','Khan Academy')"><div style="font-size:24px">📄</div><div style="flex:1"><div style="font-family:'Bebas Neue',sans-serif;font-size:15px">Produtividade e Hábitos</div><div style="font-size:12px;color:var(--t2)">Khan Academy • 10 Mar 2025</div></div><div style="font-size:12px;color:var(--yellow)">Ver ↗</div></div>
+        <div class="cert-card" onclick="viewCert('Empreendedorismo — Módulo 1','SEBRAE')"><div style="font-size:24px">📄</div><div style="flex:1"><div style="font-family:'Bebas Neue',sans-serif;font-size:15px">Empreendedorismo — Módulo 1</div><div style="font-size:12px;color:var(--t2)">SEBRAE • 5 Mar 2025</div></div><div style="font-size:12px;color:var(--yellow)">Ver ↗</div></div>
+        <div id="extraCerts"></div>
+      </div>
+
+      <div class="card">
+        <div class="clabel">🛒 Loja de recompensas</div>
+        <div class="shop-item" style="border:none;padding:10px 0;border-bottom:1px solid var(--b2)"><div class="shop-icon">📘</div><div style="flex:1"><div class="shop-name">Curso Excel Avançado</div><div class="shop-desc">Udemy — 40h</div></div><div class="buy-btn" onclick="buyItem(500,'Curso Excel Avançado')">500 🪙</div></div>
+        <div class="shop-item" style="border:none;padding:10px 0;border-bottom:1px solid var(--b2)"><div class="shop-icon">🧠</div><div style="flex:1"><div class="shop-name">Psicologia do Dinheiro</div><div class="shop-desc">E-book + áudio</div></div><div class="buy-btn" onclick="buyItem(200,'E-book')">200 🪙</div></div>
+        <div class="shop-item" style="border:none;padding:10px 0;border-bottom:1px solid var(--b2)"><div class="shop-icon">🎓</div><div style="flex:1"><div class="shop-name">Certificação de Inglês</div><div class="shop-desc">Curso + certificado</div></div><div class="buy-btn" onclick="buyItem(800,'Certificação de Inglês')">800 🪙</div></div>
+        <div class="shop-item" style="border:none;padding:10px 0"><div class="shop-icon">💆</div><div style="flex:1"><div class="shop-name">Sessão com Psicólogo</div><div class="shop-desc">1h com profissional</div></div><div class="buy-btn" onclick="buyItem(1000,'Sessão com Psicólogo')">1000 🪙</div></div>
+      </div>
+
+      <button class="btn btn-red" onclick="doLogout()">SAIR DA CONTA</button>
+    </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- BNAV -->
+  <div class="bnav">
+    <button class="nb active" id="nb-home" onclick="nav('home')"><span class="ni">🏠</span>Início</button>
+    <button class="nb" id="nb-cursos" onclick="nav('cursos')"><span class="ni">📚</span>Cursos</button>
+    <button class="nb-checkin" id="nb-checkin-btn" onclick="checkIn()">
+      <div class="nb-checkin-ring" id="nb-checkin-ring">
+        <span class="nb-checkin-icon" id="nb-checkin-icon">✔</span>
+      </div>
+      <span class="nb-checkin-lbl" id="nb-checkin-lbl">Hoje não<br>apostei</span>
+    </button>
+    <button class="nb" id="nb-objetivos" onclick="nav('objetivos')"><span class="ni">🎯</span>Metas</button>
+    <button class="nb" id="nb-perfil" onclick="nav('perfil')"><span class="ni">👤</span>Perfil</button>
+  </div>
+</div>
+
+<!-- ════ MODALS ════ -->
+<div class="modal-bg" id="m-puzzle">
+  <div class="modal">
+    <button class="mc" onclick="closeM('m-puzzle')">✕</button>
+    <div class="mt">🎨 PUZZLE DAS CORES</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:12px">Clique em 3 células da mesma cor para combinar!</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div><span style="font-size:13px;color:var(--t2)">Combos: </span><span id="pScore" style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--orange2)">0</span></div>
+      <div class="g-timer" id="pTimer">60</div>
+    </div>
+    <div class="puzzle-grid" id="pGrid"></div>
+    <button class="btn" id="pStartBtn" onclick="startPuzzle()">▶ INICIAR JOGO</button>
+    <div id="pResult" style="display:none;text-align:center;padding:16px 0">
+      <div style="font-size:44px" id="pResIco"></div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.05em;margin:8px 0;background:var(--grad-hero);-webkit-background-clip:text;-webkit-text-fill-color:transparent" id="pResTxt"></div>
+      <button class="btn btn-sm" style="margin-top:8px" onclick="closeM('m-puzzle')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="m-quiz">
+  <div class="modal">
+    <button class="mc" onclick="closeM('m-quiz')">✕</button>
+    <div class="mt">⚡ QUIZ RELÂMPAGO</div>
+    <div class="qprog" id="qProg"></div>
+    <div class="quiz-q" id="qQ"></div>
+    <div class="quiz-opts" id="qOpts"></div>
+    <div id="qResult" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:46px" id="qResIco"></div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.05em;margin:8px 0;background:var(--grad-hero);-webkit-background-clip:text;-webkit-text-fill-color:transparent" id="qResTxt"></div>
+      <div style="font-size:14px;color:var(--t2)" id="qResSub"></div>
+      <button class="btn" style="margin-top:16px" onclick="closeM('m-quiz')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="m-maze">
+  <div class="modal">
+    <button class="mc" onclick="closeM('m-maze')">✕</button>
+    <div class="mt">🧩 LABIRINTO DA MENTE</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:10px">Setas do teclado ou botões. Chegue ao 🏆!</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:13px;color:var(--t2)">Tempo: <span id="mzTimer" style="color:var(--orange2);font-weight:700">0s</span></span>
+      <button class="btn btn-sm btn-outline" onclick="initMaze()">↺ Novo</button>
+    </div>
+    <canvas id="maze-c" width="288" height="288"></canvas>
+    <div class="maze-btns">
+      <div></div><button class="mb" onclick="mMove('up')">↑</button><div></div>
+      <button class="mb" onclick="mMove('left')">←</button>
+      <button class="mb" onclick="mMove('down')">↓</button>
+      <button class="mb" onclick="mMove('right')">→</button>
+    </div>
+    <div id="mzWin" style="display:none;text-align:center;margin-top:14px">
+      <div style="font-size:40px">🏆</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.05em;margin:8px 0;background:var(--grad-hero);-webkit-background-clip:text;-webkit-text-fill-color:transparent">CONCLUÍDO EM <span id="mzTime"></span>!</div>
+      <button class="btn" onclick="closeM('m-maze')">RECEBER +40 🪙 ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="m-budget">
+  <div class="modal">
+    <button class="mc" onclick="closeM('m-budget')">✕</button>
+    <div class="mt">📊 SIMULADOR DE ORÇAMENTO</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:14px">Distribua R$ 3.000 sem estourar o limite!</div>
+    <div id="budgetItems"></div>
+    <div style="margin-top:12px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:14px;font-weight:600">Total alocado</span>
+        <span id="bTotal" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.03em;color:var(--orange2)">R$ 0</span>
+      </div>
+      <div class="pbar"><div class="pfill" id="bBar" style="width:0%"></div></div>
+    </div>
+    <div id="bMsg" style="font-size:13px;color:var(--t2);margin-top:8px;min-height:18px"></div>
+    <button class="btn" style="margin-top:14px" onclick="submitBudget()">✅ CONFIRMAR ORÇAMENTO (+35 🪙)</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="m-course">
+  <div class="modal">
+    <button class="mc" onclick="closeM('m-course')">✕</button>
+    <div id="courseContent"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="m-cert">
+  <div class="modal">
+    <button class="mc" onclick="closeM('m-cert')">✕</button>
+    <div class="mt">📜 CERTIFICADO DIGITAL</div>
+    <div class="cert-prev">
+      <div style="font-size:32px;margin-bottom:10px">🔄</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:.12em;color:var(--yellow);margin-bottom:8px">TURNMYLIFE — CERTIFICADO DE CONCLUSÃO</div>
+      <div style="font-size:14px;color:var(--t2);margin-bottom:6px">Certificamos que</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.04em;background:var(--grad-hero);-webkit-background-clip:text;-webkit-text-fill-color:transparent" id="certName">João Silva</div>
+      <div style="font-size:14px;color:var(--t2);margin:4px 0">concluiu com êxito o curso</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.03em;color:var(--text);margin-bottom:4px" id="certCourse"></div>
+      <div class="cert-bar"></div>
+      <div style="font-size:24px;letter-spacing:5px">⭐⭐⭐⭐⭐</div>
+      <div style="font-size:12px;color:var(--t2);margin-top:10px" id="certDate"></div>
+    </div>
+    <button class="btn" onclick="dlCert()">⬇ BAIXAR CERTIFICADO PDF</button>
+    <button class="btn btn-outline" style="margin-top:8px" onclick="closeM('m-cert')">Fechar</button>
+  </div>
+</div>
+
+<!-- Modal Editar Motivo -->
+<div class="modal-bg" id="m-motivo">
+  <div class="modal">
+    <button class="mc" onclick="closeM('m-motivo')">✕</button>
+    <div class="mt">💜 MEU MOTIVO</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:14px;line-height:1.6">Este motivo aparece todo dia como seu lembrete de força. Por quem ou por que você está nessa jornada?</div>
+    <textarea class="form-input" id="motivo-edit-input" rows="4" placeholder="Ex: Pela minha família, pelos meus filhos, pelo meu futuro..." style="margin-bottom:14px"></textarea>
+    <button class="btn" onclick="saveMotivo()">💜 SALVAR MEU MOTIVO</button>
+  </div>
+</div>
+
+<!-- Modal Novo Post -->
+<div class="modal-bg" id="m-post-img">
+  <div class="modal">
+    <button class="mc" onclick="closeM('m-post-img')">✕</button>
+    <div class="mt">📷 ADICIONAR FOTO</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:16px">Escolha um emoji para representar sua foto (em um app real, você enviaria uma imagem)</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px">
+      <button onclick="selectEmoji('🌅',this)" style="font-size:28px;background:var(--card2);border:2px solid var(--b2);border-radius:12px;padding:10px;cursor:pointer;transition:all .2s">🌅</button>
+      <button onclick="selectEmoji('💪',this)" style="font-size:28px;background:var(--card2);border:2px solid var(--b2);border-radius:12px;padding:10px;cursor:pointer;transition:all .2s">💪</button>
+      <button onclick="selectEmoji('🏆',this)" style="font-size:28px;background:var(--card2);border:2px solid var(--b2);border-radius:12px;padding:10px;cursor:pointer;transition:all .2s">🏆</button>
+      <button onclick="selectEmoji('💰',this)" style="font-size:28px;background:var(--card2);border:2px solid var(--b2);border-radius:12px;padding:10px;cursor:pointer;transition:all .2s">💰</button>
+      <button onclick="selectEmoji('🌱',this)" style="font-size:28px;background:var(--card2);border:2px solid var(--b2);border-radius:12px;padding:10px;cursor:pointer;transition:all .2s">🌱</button>
+      <button onclick="selectEmoji('❤️',this)" style="font-size:28px;background:var(--card2);border:2px solid var(--b2);border-radius:12px;padding:10px;cursor:pointer;transition:all .2s">❤️</button>
+      <button onclick="selectEmoji('🙏',this)" style="font-size:28px;background:var(--card2);border:2px solid var(--b2);border-radius:12px;padding:10px;cursor:pointer;transition:all .2s">🙏</button>
+      <button onclick="selectEmoji('😊',this)" style="font-size:28px;background:var(--card2);border:2px solid var(--b2);border-radius:12px;padding:10px;cursor:pointer;transition:all .2s">😊</button>
+      <button onclick="selectEmoji('🎯',this)" style="font-size:28px;background:var(--card2);border:2px solid var(--b2);border-radius:12px;padding:10px;cursor:pointer;transition:all .2s">🎯</button>
+      <button onclick="selectEmoji('🌟',this)" style="font-size:28px;background:var(--card2);border:2px solid var(--b2);border-radius:12px;padding:10px;cursor:pointer;transition:all .2s">🌟</button>
+    </div>
+    <button class="btn" onclick="confirmPhoto()">✅ ADICIONAR FOTO</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- TRAVA FOCO OVERLAY -->
+<div class="foco-overlay" id="foco-overlay">
+  <div class="foco-icon">✈️</div>
+  <div class="foco-title">MODO FOCO</div>
+  <div class="foco-sub">O celular está em modo de estudo. Sem distrações, sem apostas. Apenas você e seu crescimento.</div>
+  <div class="foco-motivo" id="foco-motivo-box">
+    <div class="foco-motivo-lbl">SEU MOTIVO</div>
+    <div class="foco-motivo-text" id="foco-motivo-text">Pela sua família.</div>
+  </div>
+  <div class="foco-timer" id="foco-timer">25:00</div>
+  <div class="foco-timer-lbl">Tempo restante de foco</div>
+  <div class="foco-actions">
+    <button class="foco-exit-btn" onclick="endFoco()">✕ Encerrar foco</button>
+  </div>
+</div>
+
+<!-- ALERTA RECAÍDA -->
+<div class="recaida-overlay" id="recaida-overlay">
+  <div class="recaida-card">
+    <div class="recaida-icon">🆘</div>
+    <div class="recaida-title">MOMENTO DE RISCO</div>
+    <div class="recaida-text" id="recaida-text">
+      Você identificou que está em risco de recaída. Isso é um ato de coragem! <br><br>
+      Lembre-se: <strong id="recaida-motivo">sua família está contando com você.</strong><br><br>
+      Você tem <strong id="recaida-streak">23 dias</strong> de esforço que valem muito. Não jogue isso fora.
+    </div>
+    <div class="recaida-actions">
+      <button class="btn btn-lime" onclick="closeRecaida()">💪 ESTOU MAIS FORTE AGORA</button>
+      <button class="btn btn-purple" onclick="nav('social');closeRecaida()">👥 FALAR COM A COMUNIDADE</button>
+      <button class="btn btn-outline" onclick="callHelp();closeRecaida()" style="margin-top:4px">📞 LIGAR 188 (CVV)</button>
+    </div>
+  </div>
+</div>
+
+<!-- BLOQUEIO DE SITE SIMULADO -->
+<div class="redirect-overlay" id="redirect-overlay">
+  <div class="recaida-card" style="border-color:rgba(239,68,68,.5)">
+    <div class="recaida-icon">🚫</div>
+    <div class="recaida-title" style="color:var(--red)">ACESSO BLOQUEADO</div>
+    <div class="recaida-text">
+      O <strong>TurnMyLife Modo Proteção</strong> detectou que você tentou acessar um site de apostas.<br><br>
+      Lembre-se: <em id="block-motivo">"Pela minha família."</em><br><br>
+      Você tem <strong id="block-streak">23 dias</strong> de conquista. Vale a pena perder tudo isso?
+    </div>
+    <div class="recaida-actions">
+      <button class="btn" onclick="closeBlock()">✅ VOLTEI A MIM — FECHAR</button>
+      <button class="btn btn-red" style="margin-top:6px" onclick="showRecaida();closeBlock()">⚠️ AINDA ESTOU EM RISCO</button>
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ══════════════════════════════════
+// STATE
+// ══════════════════════════════════
+let S = {
+  coins:580, xp:2850, xpMax:4000, level:5,
+  streak:23, userName:'João Silva', avatar:'🦁',
+  motivo:'Pela minha família e meu futuro.',
+  deposits:[], totalDeposit:0,
+  courses:{ financas:[true,false,false], produtividade:[true,true], marketing:[false,false], empreender:[true,false,false,false] },
+  checkedInToday:false,
+  protectionOn:false,
+  toggles:{ redirect:true, night:true, recaida:true, motivo:true },
+  connections:[],
+  posts:[],
+  selectedEmoji: null
+};
+
+// ══════════════════════════════════
+// AUTH
+// ══════════════════════════════════
+function switchAuth(t){
+  document.querySelectorAll('.auth-tab').forEach((el,i)=>el.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='register')));
+  document.getElementById('login-form').style.display=t==='login'?'block':'none';
+  document.getElementById('register-form').style.display=t==='register'?'block':'none';
+}
+function doLogin(){
+  const em=document.getElementById('l-email').value.trim(), pw=document.getElementById('l-pass').value;
+  const err=document.getElementById('l-err');
+  if((em==='demo@turnmylife.app'&&pw==='123456')||(em.includes('@')&&pw.length>=6)){
+    S.userName=em==='demo@turnmylife.app'?'João Silva':em.split('@')[0]; launch();
+  } else { err.style.display='block'; setTimeout(()=>err.style.display='none',3000); }
+}
+function doRegister(){
+  const n=document.getElementById('r-name').value.trim(), em=document.getElementById('r-email').value.trim(), pw=document.getElementById('r-pass').value, motivo=document.getElementById('r-motivo').value.trim();
+  let ok=true;
+  if(!n){document.getElementById('r-err-name').style.display='block';ok=false;}else document.getElementById('r-err-name').style.display='none';
+  if(!em.includes('@')){document.getElementById('r-err-email').style.display='block';ok=false;}else document.getElementById('r-err-email').style.display='none';
+  if(pw.length<6){document.getElementById('r-err-pass').style.display='block';ok=false;}else document.getElementById('r-err-pass').style.display='none';
+  if(!motivo){document.getElementById('r-err-motivo').style.display='block';ok=false;}else document.getElementById('r-err-motivo').style.display='none';
+  if(!ok)return;
+  S.userName=n; S.streak=0; S.coins=100; S.xp=0; S.level=1;
+  S.motivo=motivo;
+  S.courses={financas:[false,false,false],produtividade:[false,false],marketing:[false,false],empreender:[false,false,false,false]};
+  launch();
+}
+function quickDemo(){
+  S.userName='Visitante';
+  S.motivo='Pela minha família e meu futuro.';
+  launch();
+}
+function launch(){
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  updateUI(); setDYK(); updateMotivoDisplay(); updateCofreUI(); setupDailyNotifications(); restoreCheckinState();
+  showToast(`BEM-VINDO, ${S.userName.split(' ')[0].toUpperCase()}! 🔄`);
+}
+function doLogout(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('auth-screen').style.display='block';
+  document.getElementById('l-email').value=''; document.getElementById('l-pass').value='';
+  // Show motivo on login if set
+  if(S.toggles.motivo && S.motivo){
+    document.getElementById('login-motivo-msg').textContent=getMotivoMessage();
+    document.getElementById('motivo-daily-reminder').style.display='block';
+  }
+  showToast('ATÉ LOGO! CONTINUE FIRME 💪');
+}
+
+// ══════════════════════════════════
+// MOTIVO
+// ══════════════════════════════════
+const MOTIVO_MESSAGES = [
+  m => `Lembre-se: "${m}"`,
+  m => `Você está fazendo isso por: ${m}`,
+  m => `Cada dia sem apostar é um passo por: ${m}`,
+  m => `Seu progresso é pelo que mais importa: ${m}`,
+  m => `Não desista. Você está fazendo isso por: ${m}`,
+];
+function getMotivoMessage(){
+  const fn = MOTIVO_MESSAGES[Math.floor(Math.random()*MOTIVO_MESSAGES.length)];
+  return fn(S.motivo);
+}
+function updateMotivoDisplay(){
+  const msg = getMotivoMessage();
+  const el1 = document.getElementById('home-motivo-msg');
+  const el2 = document.getElementById('profile-motivo-text');
+  const el3 = document.getElementById('foco-motivo-text');
+  if(el1) el1.textContent = msg;
+  if(el2) el2.textContent = S.motivo;
+  if(el3) el3.textContent = S.motivo;
+}
+function editMotivo(){
+  document.getElementById('motivo-edit-input').value = S.motivo;
+  openM('m-motivo');
+}
+function saveMotivo(){
+  const v = document.getElementById('motivo-edit-input').value.trim();
+  if(!v){showToast('⚠️ ESCREVA SEU MOTIVO',true);return;}
+  S.motivo = v;
+  updateMotivoDisplay();
+  closeM('m-motivo');
+  showToast('💜 MOTIVO SALVO!');
+}
+
+// ══════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════
+function nav(sc){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  const screen = document.getElementById('sc-'+sc);
+  if(!screen) return;
+  screen.classList.add('active');
+  const nb=document.getElementById('nb-'+sc); if(nb) nb.classList.add('active');
+  document.getElementById('main-content').scrollTop=0;
+  if(sc==='realidade') updateReality();
+  if(sc==='social') updateSocialAvatars();
+}
+
+// ══════════════════════════════════
+// UPDATE UI
+// ══════════════════════════════════
+function updateUI(){
+  ['coinDisplay','dashCoins','profCoins'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=S.coins;});
+  document.getElementById('lvDisplay').textContent=S.level;
+  ['streakNum','dashStreak','profStreak'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=S.streak;});
+  document.getElementById('profAv').textContent=S.avatar;
+  document.getElementById('profName').textContent=S.userName;
+  const rankName=document.getElementById('rankName'); if(rankName) rankName.textContent=S.userName.split(' ')[0];
+  const rankSub=document.getElementById('rankSub'); if(rankSub) rankSub.textContent=S.streak+' dias • '+S.coins+' 🪙';
+  const rankScore=document.getElementById('rankScore'); if(rankScore) rankScore.textContent=S.xp+' XP';
+  const rankAv=document.getElementById('rankAvatar'); if(rankAv) rankAv.textContent=S.avatar;
+  const pct=Math.round(S.xp/S.xpMax*100);
+  document.getElementById('xpFill').style.width=pct+'%';
+  document.getElementById('xpTxt').textContent=S.xp.toLocaleString('pt-BR')+' / '+S.xpMax.toLocaleString('pt-BR')+' XP';
+  updateCofreUI();
+}
+function addCoins(n,msg){ S.coins+=n; updateUI(); showToast(msg||'+'+n+' 🪙'); }
+function addXP(n){ S.xp=Math.min(S.xp+n,S.xpMax); updateUI(); }
+
+// ══════════════════════════════════
+// DYK
+// ══════════════════════════════════
+const DYK=['💡 Cada R$ 1 em educação pode gerar R$ 10 de retorno na carreira.','🧠 Criar hábitos positivos leva 66 dias — você já está no caminho!','💰 R$ 50/mês por 10 anos = mais de R$ 7.000 corrigidos.','📊 Quem controla finanças dorme melhor e tem menos estresse.','🎯 Cada dia de streak forma conexões neurais mais fortes.','🔄 Neuroplasticidade: seu cérebro se reconecta a cada dia sem apostas.','💜 Apoio social aumenta em 60% a chance de recuperação.'];
+function setDYK(){ document.getElementById('dyk').textContent=DYK[Math.floor(Math.random()*DYK.length)]; }
+
+// ══════════════════════════════════
+// CHECK IN
+// ══════════════════════════════════
+function checkIn(){
+  if(S.checkedInToday){showToast('JÁ CONFIRMADO HOJE! ✅');return;}
+  S.checkedInToday=true; S.streak++;
+  updateUI(); addCoins(50,'🔥 STREAK '+S.streak+' DIAS! +50 🪙'); addXP(100); setDYK();
+  checkCofreMilestones();
+  renderObjetivos();
+  // Update central button
+  const ring = document.getElementById('nb-checkin-ring');
+  const icon = document.getElementById('nb-checkin-icon');
+  const lbl  = document.getElementById('nb-checkin-lbl');
+  const btn  = document.getElementById('nb-checkin-btn');
+  if(ring){ ring.classList.add('done'); }
+  if(icon){ icon.textContent = '✔'; }
+  if(lbl) { lbl.textContent = S.streak+' dias!'; }
+  if(btn) { btn.classList.add('done-state'); }
+  // Confetti + XP pop
+  triggerConfetti();
+  showXPPop('+100 XP · +50 🪙');
+  // Schedule push notification demo
+  scheduleNotification();
+}
+
+function triggerConfetti(){
+  const container = document.createElement('div');
+  container.className='confetti-burst';
+  document.body.appendChild(container);
+  const colors=['#ff6b2b','#ff3d9a','#a855f7','#22d3ee','#ffd23f','#84cc16'];
+  const cx = window.innerWidth/2;
+  const cy = window.innerHeight - 80;
+  for(let i=0;i<28;i++){
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.style.background=colors[i%colors.length];
+    el.style.left=(cx + (Math.random()-0.5)*180)+'px';
+    el.style.top=cy+'px';
+    el.style.animationDelay=(Math.random()*0.3)+'s';
+    el.style.animationDuration=(0.9+Math.random()*0.5)+'s';
+    container.appendChild(el);
+  }
+  setTimeout(()=>container.remove(), 2000);
+}
+
+function showXPPop(text){
+  const el=document.createElement('div');
+  el.className='xp-pop';
+  el.textContent=text;
+  el.style.left='50%';
+  el.style.bottom='90px';
+  el.style.transform='translateX(-50%)';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1600);
+}
+
+// ── NOTIFICAÇÕES ──
+function requestNotifPermission(){
+  if(!('Notification' in window)) return;
+  if(Notification.permission==='default'){
+    Notification.requestPermission();
+  }
+}
+
+function scheduleNotification(){
+  if(!('Notification' in window)||Notification.permission!=='granted') return;
+  // Schedule for next day at 20:30 (simulated as 5s for demo)
+  // In production this would be a Service Worker scheduled push
+  const days = S.streak;
+  const days1 = days+1;
+  setTimeout(()=>{
+    const n = new Notification('TurnMyLife 🔥', {
+      body: `Você está há ${days1} dia${days1>1?'s':''} sem apostar.
+Não quebre sua sequência!`,
+      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔄</text></svg>'
+    });
+    n.onclick = ()=>{ window.focus(); n.close(); };
+  }, 6000);
+}
+
+
+function restoreCheckinState(){
+  if(S.checkedInToday){
+    const ring=document.getElementById('nb-checkin-ring');
+    const lbl=document.getElementById('nb-checkin-lbl');
+    const btn=document.getElementById('nb-checkin-btn');
+    if(ring) ring.classList.add('done');
+    if(lbl) lbl.textContent=S.streak+' dias!';
+    if(btn) btn.classList.add('done-state');
+  }
+}
+
+function setupDailyNotifications(){
+  if(!('Notification' in window)) return;
+  requestNotifPermission();
+}
+
+
+// ══════════════════════════════════
+// COFRE VIRTUAL
+// ══════════════════════════════════
+function updateCofreUI(){
+  const el1=document.getElementById('home-cofre-val');
+  if(el1) el1.textContent = S.totalDeposit > 0 ? fmtBRL(S.totalDeposit) : 'R$ 0';
+  checkCofreMilestones();
+}
+function checkCofreMilestones(){
+  const milestones = [{id:'cm-7',days:7},{id:'cm-14',days:14},{id:'cm-30',days:30},{id:'cm-60',days:60},{id:'cm-90',days:90}];
+  milestones.forEach(m=>{
+    const el=document.getElementById(m.id); if(!el)return;
+    if(S.streak>=m.days){ el.classList.add('done'); } else if(S.streak>=m.days-7){ el.classList.add('next'); }
+  });
+}
+
+// ══════════════════════════════════
+// SOCIAL
+// ══════════════════════════════════
+function updateSocialAvatars(){
+  const av=document.getElementById('social-my-avatar'); if(av) av.textContent=S.avatar;
+  const nm=document.getElementById('social-my-name'); if(nm) nm.textContent=S.userName.split(' ')[0];
+}
+function likePost(btn){
+  const sp=btn.querySelector('span:last-child');
+  sp.textContent=parseInt(sp.textContent)+1;
+  btn.classList.add('liked');
+  showToast('❤️ APOIOU ESTA PESSOA!');
+}
+function commentPost(btn){showToast('💬 COMENTÁRIOS EM BREVE!');}
+function sharePost(btn){showToast('✨ APOIO ENVIADO! +10 🪙');addCoins(10,'✨ APOIO ENVIADO! +10 🪙');}
+function connect(btn){
+  const name=btn.closest('.conn-card').querySelector('.conn-name').textContent;
+  btn.textContent='✓ Conectado'; btn.classList.add('connected');
+  showToast('🤝 CONECTADO COM '+name.toUpperCase()+'!'); addCoins(15,'🤝 NOVA CONEXÃO! +15 🪙');
+}
+function addPhoto(){openM('m-post-img');}
+function addStreak(){
+  const ta=document.getElementById('new-post-text');
+  ta.value=(ta.value?ta.value+'\n\n':'')+'🔥 '+S.streak+' dias sem apostas!';
+}
+function addMotivo(){
+  const ta=document.getElementById('new-post-text');
+  ta.value=(ta.value?ta.value+'\n\n':'')+'💜 Meu motivo: "'+S.motivo+'"';
+}
+let selectedPostEmoji=null;
+function selectEmoji(e,btn){
+  document.querySelectorAll('#m-post-img button').forEach(b=>b.style.borderColor='var(--b2)');
+  btn.style.borderColor='var(--orange)';
+  selectedPostEmoji=e;
+}
+function confirmPhoto(){
+  if(!selectedPostEmoji){showToast('⚠️ SELECIONE UMA FOTO',true);return;}
+  closeM('m-post-img');
+  // Store for post
+  S._postEmoji=selectedPostEmoji; selectedPostEmoji=null;
+  showToast('📷 FOTO ADICIONADA!');
+}
+function publishPost(){
+  const text=document.getElementById('new-post-text').value.trim();
+  if(!text){showToast('⚠️ ESCREVA ALGO PARA PUBLICAR',true);return;}
+  const feed=document.getElementById('social-feed');
+  const emoji=S._postEmoji||null; S._postEmoji=null;
+  const imgHtml=emoji?`<div class="img-placeholder">${emoji}</div>`:'';
+  const newPost=document.createElement('div');
+  newPost.className='post-card';
+  newPost.innerHTML=`
+    <div class="post-header">
+      <div class="post-avatar">${S.avatar}</div>
+      <div class="post-user">
+        <div class="post-name">${S.userName}</div>
+        <div class="post-time">Agora · <span class="post-streak-chip">🔥 ${S.streak} dias</span></div>
+      </div>
+    </div>
+    ${imgHtml}
+    <div class="post-content">${text.replace(/\n/g,'<br>')}</div>
+    <div class="post-actions">
+      <button class="post-action-btn" onclick="likePost(this)"><span class="post-action-icon">❤️</span><span>0</span></button>
+      <button class="post-action-btn" onclick="commentPost(this)"><span class="post-action-icon">💬</span><span>0</span></button>
+      <button class="post-action-btn" onclick="sharePost(this)" style="margin-left:auto"><span class="post-action-icon">↗️</span><span>Apoiar</span></button>
+    </div>`;
+  feed.insertBefore(newPost, feed.firstChild);
+  document.getElementById('new-post-text').value='';
+  addCoins(20,'📢 POST PUBLICADO! +20 🪙'); addXP(30);
+}
+
+function shareWin(){addCoins(30,'✨ CONQUISTA COMPARTILHADA! +30 🪙');addXP(50);}
+
+// ══════════════════════════════════
+// PROTEÇÃO / BLOQUEIO
+// ══════════════════════════════════
+function toggleProtection(){
+  S.protectionOn=!S.protectionOn;
+  const hero=document.getElementById('protect-hero');
+  const icon=document.getElementById('protect-icon');
+  const title=document.getElementById('protect-title');
+  const sub=document.getElementById('protect-sub');
+  const btn=document.getElementById('protect-toggle-btn');
+  const siteIds=['bs-bet365','bs-betano','bs-sport','bs-braz','bs-kto','bs-novi','bs-super','bs-all'];
+  if(S.protectionOn){
+    hero.classList.add('protect-active');
+    icon.textContent='🔒'; title.textContent='PROTEÇÃO ATIVADA';
+    sub.textContent='Modo Proteção está ATIVO. Sites de apostas estão bloqueados. Alertas de recaída ligados.';
+    btn.textContent='✅ DESATIVAR PROTEÇÃO'; btn.className='btn btn-outline';
+    siteIds.forEach(id=>{const el=document.getElementById(id);if(el){el.textContent='Bloqueado';el.className='blocked-site-status bs-blocked';}});
+    showToast('🛡️ MODO PROTEÇÃO ATIVADO!');
+  } else {
+    hero.classList.remove('protect-active');
+    icon.textContent='🛡️'; title.textContent='PROTEÇÃO DESATIVADA';
+    sub.textContent='Ative o modo proteção para bloquear automaticamente os sites de apostas.';
+    btn.textContent='🛑 ATIVAR MODO PROTEÇÃO'; btn.className='btn';
+    siteIds.forEach(id=>{const el=document.getElementById(id);if(el){el.textContent='Permitido';el.className='blocked-site-status bs-ok';}});
+    showToast('PROTEÇÃO DESATIVADA', true);
+  }
+}
+function toggleOpt(key){
+  S.toggles[key]=!S.toggles[key];
+  const tog=document.getElementById('tog-'+key);
+  if(tog) tog.classList.toggle('on', S.toggles[key]);
+}
+function simulateBlock(){
+  document.getElementById('block-motivo').textContent='"'+S.motivo+'"';
+  document.getElementById('block-streak').textContent=S.streak+' dias';
+  document.getElementById('redirect-overlay').classList.add('active');
+}
+function closeBlock(){ document.getElementById('redirect-overlay').classList.remove('active'); }
+function showRecaida(){
+  document.getElementById('recaida-motivo').textContent=S.motivo;
+  document.getElementById('recaida-streak').textContent=S.streak+' dias';
+  document.getElementById('recaida-overlay').classList.add('active');
+}
+function closeRecaida(){ document.getElementById('recaida-overlay').classList.remove('active'); }
+function callHelp(){ showToast('📞 CVV: LIGUE 188 — GRATUITO 24H'); }
+
+// ══════════════════════════════════
+// MODO FOCO
+// ══════════════════════════════════
+let focoInterval=null, focoSecs=0;
+function startFoco(mins){
+  focoSecs=mins*60;
+  document.getElementById('foco-motivo-text').textContent=S.motivo;
+  updateFocoTimer();
+  document.getElementById('foco-overlay').classList.add('active');
+  clearInterval(focoInterval);
+  focoInterval=setInterval(()=>{
+    focoSecs--;
+    updateFocoTimer();
+    if(focoSecs<=0){ clearInterval(focoInterval); endFocoComplete(); }
+  },1000);
+}
+function updateFocoTimer(){
+  const m=Math.floor(focoSecs/60), s=focoSecs%60;
+  document.getElementById('foco-timer').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+function endFoco(){
+  clearInterval(focoInterval);
+  document.getElementById('foco-overlay').classList.remove('active');
+  showToast('✈️ MODO FOCO ENCERRADO');
+}
+function endFocoComplete(){
+  document.getElementById('foco-overlay').classList.remove('active');
+  addCoins(60,'✈️ SESSÃO DE FOCO COMPLETA! +60 🪙'); addXP(120);
+  showToast('🧠 SESSÃO DE FOCO CONCLUÍDA! +60 🪙');
+}
+
+// ══════════════════════════════════
+// SHOP / AVATAR
+// ══════════════════════════════════
+function buyItem(cost,name){
+  if(S.coins>=cost){S.coins-=cost;updateUI();showToast('✅ '+name.toUpperCase()+' DESBLOQUEADO!');}
+  else showToast('🪙 MOEDAS INSUFICIENTES!',true);
+}
+function setAv(emoji,el){
+  S.avatar=emoji;
+  document.getElementById('profAv').textContent=emoji;
+  document.querySelectorAll('.av-opt').forEach(e=>e.classList.remove('sel')); el.classList.add('sel');
+  updateSocialAvatars();
+  showToast('AVATAR ATUALIZADO! '+emoji);
+}
+
+// ══════════════════════════════════
+// DEPOSIT / COFRE
+// ══════════════════════════════════
+function fmtBRL(v){return 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function quickDep(v){document.getElementById('depInput').value=v;}
+function doDeposit(){
+  const val=parseFloat(document.getElementById('depInput').value);
+  if(!val||val<=0){showToast('⚠️ VALOR INVÁLIDO',true);return;}
+  const d=new Date(); S.deposits.unshift({val,date:d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})});
+  S.totalDeposit+=val; document.getElementById('depInput').value='';
+  document.getElementById('depositBalance').textContent=fmtBRL(S.totalDeposit);
+  document.getElementById('depositDays').textContent=S.streak;
+  document.getElementById('dep-saved-msg').style.display='flex';
+  document.getElementById('historyCard').style.display='block';
+  document.getElementById('depTotal').textContent=fmtBRL(S.totalDeposit);
+  renderHistory(); addCoins(20,'🏦 DEPÓSITO REGISTRADO! +20 🪙'); updateReality(); updateCofreUI();
+}
+function renderHistory(){
+  const icons=['🌱','💰','🎯','💎','🔥','⭐','🏦','🌿'];
+  document.getElementById('depHistory').innerHTML=S.deposits.slice(0,8).map((d,i)=>`
+    <div class="dep-item">
+      <div class="dep-left"><div class="dep-icon">${icons[i%icons.length]}</div>
+        <div><div class="dep-name">Dinheiro poupado</div><div class="dep-date">${d.date}</div></div>
+      </div>
+      <div class="dep-amount">+ ${fmtBRL(d.val)}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════
+// REALITY
+// ══════════════════════════════════
+const ITEMS=[
+  {emoji:'🍔',name:'Refeições no restaurante',cat:'Alimentação',price:45},
+  {emoji:'🎬',name:'Cinema com família',cat:'Lazer',price:60},
+  {emoji:'👟',name:'Tênis esportivo',cat:'Vestuário',price:350},
+  {emoji:'📱',name:'Smartphone intermediário',cat:'Tecnologia',price:1500},
+  {emoji:'💻',name:'Notebook para estudos',cat:'Tecnologia',price:2800},
+  {emoji:'📚',name:'Cursos e livros',cat:'Educação',price:150},
+  {emoji:'✈️',name:'Passagem aérea nacional',cat:'Viagem',price:800},
+  {emoji:'🏍️',name:'Entrada de moto',cat:'Transporte',price:3000},
+  {emoji:'🏥',name:'Consulta médica particular',cat:'Saúde',price:200},
+  {emoji:'🎓',name:'Curso profissional',cat:'Educação',price:400},
+  {emoji:'🛒',name:'Feira da semana (família)',cat:'Alimentação',price:300},
+  {emoji:'⚡',name:'Contas de luz (meses)',cat:'Essencial',price:180},
+  {emoji:'🏠',name:'Mês de aluguel',cat:'Moradia',price:1200},
+  {emoji:'🚗',name:'Entrada de carro',cat:'Transporte',price:5000},
+  {emoji:'🌍',name:'Viagem internacional',cat:'Viagem',price:8000},
+  {emoji:'🎂',name:'Festa de aniversário',cat:'Família',price:500},
+];
+function updateReality(){
+  const v=S.totalDeposit;
+  const psec=document.getElementById('purchases-section'), nmsg=document.getElementById('no-dep-msg');
+  if(v<=0){psec.style.display='none';nmsg.style.display='block';return;}
+  psec.style.display='block'; nmsg.style.display='none';
+  document.getElementById('realityAmt').textContent=fmtBRL(v);
+  document.getElementById('realitySub').textContent='Esse dinheiro poderia ter transformado sua vida';
+  const list=document.getElementById('purchasesList');
+  const fits=ITEMS.filter(i=>v>=i.price*.3).sort((a,b)=>b.price-a.price).slice(0,8);
+  list.innerHTML=fits.map(item=>{
+    const qty=Math.max(1,Math.floor(v/item.price));
+    return `<div class="purchase-card">
+      <div class="pc-top">
+        <div class="pc-emoji">${item.emoji}</div>
+        <div class="pc-info"><div class="pc-name">${item.name}</div><div class="pc-cat">${item.cat}</div></div>
+        <div class="pc-price">${fmtBRL(item.price)}<small>por unidade</small></div>
+      </div>
+      <div class="qty-row">
+        <span class="qty-icon">📦</span>
+        <span class="qty-txt">Com ${fmtBRL(v)} você compraria</span>
+        <span class="qty-num">${qty>=2?qty+'×':'1×'}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════
+// COURSES
+// ══════════════════════════════════
+const CD={
+  financas:{title:'💰 FINANÇAS PESSOAIS BÁSICAS',src:'Fundação Bradesco',mods:['O que são finanças pessoais?|8 min','Orçamento e poupança|10 min','Investimentos para iniciantes|12 min']},
+  produtividade:{title:'🧠 PRODUTIVIDADE E HÁBITOS',src:'Khan Academy',mods:['Construindo hábitos positivos|7 min','Gestão do tempo|9 min']},
+  marketing:{title:'🚀 MARKETING DIGITAL',src:'MIT OpenCourseWare',mods:['O que é marketing digital?|8 min','Redes sociais para negócios|11 min']},
+  empreender:{title:'💼 EMPREENDEDORISMO BÁSICO',src:'SEBRAE',mods:['Mentalidade empreendedora|10 min','Validando uma ideia|12 min','Plano de negócios simples|14 min','Primeiros clientes|9 min']}
+};
+const FPM={financas:['fp1','fb1'],produtividade:['fp2','fb2'],marketing:['fp3','fb3'],empreender:['fp4','fb4']};
+function openCourse(id){
+  const c=CD[id], ms=S.courses[id], done=ms.filter(Boolean).length, tot=ms.length, pct=Math.round(done/tot*100), all=done===tot;
+  let html=`<div class="mt" style="margin-bottom:4px">${c.title}</div>
+  <div style="font-size:13px;color:var(--t2);margin-bottom:12px">${c.src}</div>
+  <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap">
+    <span class="badge bo">Gratuito</span><span class="badge bc">Certificado</span>
+  </div>
+  <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+    <span style="font-size:13px;color:var(--t2)">Progresso</span>
+    <span style="font-size:13px;font-weight:700;color:var(--orange2)">${pct}%</span>
+  </div>
+  <div class="pbar" style="margin-bottom:16px"><div class="pfill" style="width:${pct}%"></div></div>
+  <div class="clabel">MÓDULOS</div>`;
+  c.mods.forEach((m,i)=>{
+    const[nm,dr]=m.split('|'), isDone=ms[i];
+    html+=`<div class="mod-item ${isDone?'done':''}" onclick="compMod('${id}',${i})">
+      <div class="mod-num">${isDone?'✓':i+1}</div>
+      <div><div style="font-size:14px;font-weight:600">${nm}</div><div style="font-size:12px;color:var(--t2)">${isDone?'Concluído • ':''}${dr}</div></div>
+    </div>`;
+  });
+  // Add foco button
+  html+=`<div style="margin:12px 0;padding:14px;background:rgba(255,107,43,.06);border:1px solid rgba(255,107,43,.15);border-radius:12px">
+    <div style="font-size:12px;color:var(--t2);margin-bottom:8px">✈️ Ative o modo foco para estudar este módulo sem distrações</div>
+    <button class="btn btn-sm" onclick="closeM('m-course');startFoco(25)" style="width:auto">✈️ Iniciar Foco 25min</button>
+  </div>`;
+  if(all) html+=`<button class="btn" style="margin-top:12px" onclick="earnCert('${id}','${c.title.replace(/^.{2}\s/,'')}','${c.src}')">🏆 EMITIR CERTIFICADO (+50 🪙)</button>`;
+  else html+=`<button class="btn" style="margin-top:12px" onclick="compMod('${id}',${done})">▶ CONTINUAR — MÓDULO ${done+1}</button>`;
+  document.getElementById('courseContent').innerHTML=html;
+  openM('m-course');
+}
+function compMod(cId,idx){
+  if(!S.courses[cId][idx]){S.courses[cId][idx]=true;addCoins(40,'📖 MÓDULO CONCLUÍDO! +40 🪙');addXP(80);updCProg(cId);}
+  openCourse(cId);
+}
+function updCProg(id){
+  const ms=S.courses[id], pct=Math.round(ms.filter(Boolean).length/ms.length*100);
+  const[fpi,fbi]=FPM[id];
+  if(document.getElementById(fpi)){document.getElementById(fpi).textContent=pct+'%';document.getElementById(fbi).style.width=pct+'%';}
+}
+function earnCert(id,course,src){
+  closeM('m-course'); viewCert(course,src); addCoins(50,'🏆 CERTIFICADO EMITIDO! +50 🪙'); addXP(200);
+  const ec=document.getElementById('extraCerts');
+  if(ec) ec.innerHTML+=`<div class="cert-card" onclick="viewCert('${course}','${src}')"><div style="font-size:24px">📄</div><div style="flex:1"><div style="font-family:'Bebas Neue',sans-serif;font-size:15px">${course}</div><div style="font-size:12px;color:var(--t2)">${src} • ${new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}</div></div><div style="font-size:12px;color:var(--yellow)">Ver ↗</div></div>`;
+}
+
+// ══════════════════════════════════
+// CERTIFICATE
+// ══════════════════════════════════
+function viewCert(course,src){
+  document.getElementById('certName').textContent=S.userName;
+  document.getElementById('certCourse').textContent=course+' — '+src;
+  document.getElementById('certDate').textContent='Emitido em '+new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  openM('m-cert');
+}
+function dlCert(){addCoins(10,'📄 CERTIFICADO BAIXADO! +10 🪙');}
+
+// ══════════════════════════════════
+// MODALS
+// ══════════════════════════════════
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');}));
+
+// ══════════════════════════════════
+// GAMES
+// ══════════════════════════════════
+function openGame(g){
+  if(g==='puzzle'){initPuzzleUI();openM('m-puzzle');}
+  else if(g==='quiz'){openM('m-quiz');startQuiz();}
+  else if(g==='maze'){openM('m-maze');setTimeout(initMaze,80);}
+  else if(g==='budget'){openM('m-budget');initBudget();}
+}
+
+// PUZZLE
+let pActive=false,pSel=[],pScore=0,pInv=null;
+const PCOLS=['#ff6b2b','#a855f7','#22d3ee','#ffd23f','#ff3d9a','#84cc16'];
+function initPuzzleUI(){document.getElementById('pStartBtn').style.display='block';document.getElementById('pResult').style.display='none';document.getElementById('pScore').textContent='0';document.getElementById('pTimer').textContent='60';document.getElementById('pTimer').classList.remove('low');buildPG();}
+function buildPG(){const g=document.getElementById('pGrid');g.innerHTML='';for(let i=0;i<36;i++){const col=PCOLS[Math.floor(Math.random()*PCOLS.length)];const d=document.createElement('div');d.className='pc-cell';d.style.background=col;d.dataset.color=col;d.onclick=()=>pClick(d);g.appendChild(d);}}
+function startPuzzle(){pActive=true;pScore=0;pSel=[];document.getElementById('pScore').textContent=0;document.getElementById('pStartBtn').style.display='none';buildPG();let t=60;clearInterval(pInv);pInv=setInterval(()=>{t--;const el=document.getElementById('pTimer');el.textContent=t;if(t<=10)el.classList.add('low');if(t<=0){clearInterval(pInv);endPuzzle();}},1000);}
+function pClick(cell){if(!pActive||cell.classList.contains('matched'))return;if(cell.classList.contains('selected')){cell.classList.remove('selected');pSel=pSel.filter(c=>c!==cell);return;}cell.classList.add('selected');pSel.push(cell);if(pSel.length===3){const cols=pSel.map(c=>c.dataset.color);if(cols.every(c=>c===cols[0])){pScore++;document.getElementById('pScore').textContent=pScore;pSel.forEach(c=>{c.classList.add('matched');setTimeout(()=>{const nc=PCOLS[Math.floor(Math.random()*PCOLS.length)];c.style.background=nc;c.dataset.color=nc;c.classList.remove('matched','selected');},250);});showToast('🎨 COMBO ×'+pScore);}else{pSel.forEach(c=>c.classList.remove('selected'));}pSel=[];}}
+function endPuzzle(){pActive=false;document.getElementById('pResult').style.display='block';document.getElementById('pResIco').textContent=pScore>=10?'🏆':pScore>=5?'⭐':'💪';document.getElementById('pResTxt').textContent=pScore+' COMBOS!';addCoins(30,'🎨 PUZZLE: '+pScore+' COMBOS! +30 🪙');addXP(60);}
+
+// QUIZ
+const QDB=[{q:'Qual é a regra do orçamento 50-30-20?',opts:['50% gastos, 30% poupança, 20% lazer','50% necessidades, 30% desejos, 20% poupança','50% alimentação, 30% moradia, 20% outros','50% renda extra, 30% lazer, 20% poupança'],ans:1},{q:'O que é "reserva de emergência"?',opts:['Dinheiro para viagens de luxo','Fundo para imprevistos (3-6 meses de despesas)','Investimento em ações de alto risco','Limite de crédito no banco'],ans:1},{q:'O que é inflação?',opts:['Aumento do poder de compra','Redução dos preços ao longo do tempo','Aumento geral dos preços ao longo do tempo','Taxa de juros mensal'],ans:2},{q:'Qual hábito ajuda mais a economizar?',opts:['Comprar tudo parcelado','Anotar todos os gastos diariamente','Usar vários cartões de crédito','Pagar apenas o mínimo do cartão'],ans:1},{q:'O que são juros compostos?',opts:['Juros calculados só sobre o valor inicial','Juros que crescem sobre juros anteriores também','Desconto em compras à vista','Taxa cobrada por bancos a cada mês'],ans:1}];
+let qIdx=0,qCorrects=0,qAnswered=false;
+function startQuiz(){qIdx=0;qCorrects=0;qAnswered=false;document.getElementById('qResult').style.display='none';renderQ();}
+function renderQ(){const q=QDB[qIdx];document.getElementById('qProg').innerHTML=QDB.map((_,i)=>`<div class="qd ${i<qIdx?'done':i===qIdx?'act':''}"></div>`).join('');document.getElementById('qQ').textContent=q.q;document.getElementById('qOpts').innerHTML=q.opts.map((o,i)=>`<button class="qopt" onclick="ansQ(${i})">${o}</button>`).join('');qAnswered=false;}
+function ansQ(i){if(qAnswered)return;qAnswered=true;const q=QDB[qIdx];document.querySelectorAll('.qopt').forEach((o,j)=>{o.classList.toggle('correct',j===q.ans);o.classList.toggle('wrong',j===i&&i!==q.ans);});if(i===q.ans)qCorrects++;setTimeout(()=>{qIdx++;if(qIdx<QDB.length)renderQ();else endQuiz();},900);}
+function endQuiz(){document.getElementById('qResult').style.display='block';document.getElementById('qOpts').innerHTML='';document.getElementById('qQ').textContent='';document.getElementById('qProg').innerHTML='';const p=qCorrects===5;document.getElementById('qResIco').textContent=p?'🏆':qCorrects>=3?'⭐':'💪';document.getElementById('qResTxt').textContent=qCorrects+'/5 ACERTOS';document.getElementById('qResSub').textContent=p?'Perfeito! Você domina finanças!':'Continue estudando e tente novamente!';addCoins(qCorrects*10,'⚡ QUIZ: '+qCorrects+'/5 • +'+(qCorrects*10)+' 🪙');addXP(qCorrects*20);}
+
+// MAZE
+const MZ=9,CS=32;let mzG,mzP,mzI,mzS=0,mzD=false;
+function initMaze(){clearInterval(mzI);mzS=0;mzD=false;document.getElementById('mzTimer').textContent='0s';document.getElementById('mzWin').style.display='none';mzG=genMaze(MZ,MZ);mzP={x:1,y:1};drawMaze();mzI=setInterval(()=>{if(!mzD){mzS++;document.getElementById('mzTimer').textContent=mzS+'s';}},1000);}
+function genMaze(w,h){const g=Array.from({length:h},()=>Array(w).fill(1));function c(x,y){const d=[[0,-2],[2,0],[0,2],[-2,0]].sort(()=>Math.random()-.5);for(const[dx,dy]of d){const nx=x+dx,ny=y+dy;if(ny>0&&ny<h&&nx>0&&nx<w&&g[ny][nx]===1){g[y+dy/2][x+dx/2]=0;g[ny][nx]=0;c(nx,ny);}}}g[1][1]=0;c(1,1);g[h-2][w-2]=0;return g;}
+function drawMaze(){const cv=document.getElementById('maze-c'),ctx=cv.getContext('2d');ctx.fillStyle='#0d0a1a';ctx.fillRect(0,0,cv.width,cv.height);for(let y=0;y<MZ;y++)for(let x=0;x<MZ;x++){if(mzG[y][x]===1){ctx.fillStyle='#221840';ctx.fillRect(x*CS,y*CS,CS,CS);}}ctx.font=(CS-4)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🏆',(MZ-2)*CS+CS/2,(MZ-2)*CS+CS/2);ctx.fillText('🟠',mzP.x*CS+CS/2,mzP.y*CS+CS/2);}
+function mMove(d){if(mzD)return;const m={up:{x:mzP.x,y:mzP.y-1},down:{x:mzP.x,y:mzP.y+1},left:{x:mzP.x-1,y:mzP.y},right:{x:mzP.x+1,y:mzP.y}};const n=m[d];if(n.y<0||n.y>=MZ||n.x<0||n.x>=MZ)return;if(mzG[n.y][n.x]===1)return;mzP=n;drawMaze();if(n.x===MZ-2&&n.y===MZ-2){mzD=true;clearInterval(mzI);document.getElementById('mzTime').textContent=mzS+'s';document.getElementById('mzWin').style.display='block';addCoins(40,'🧩 LABIRINTO EM '+mzS+'S! +40 🪙');addXP(80);}}
+document.addEventListener('keydown',e=>{const m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};if(m[e.key]&&document.getElementById('m-maze').classList.contains('open')){e.preventDefault();mMove(m[e.key]);}});
+
+// BUDGET
+const BC=[{name:'🍔 Alimentação',max:1200,def:600},{name:'🏠 Moradia',max:1500,def:800},{name:'📚 Educação',max:500,def:100},{name:'💊 Saúde',max:400,def:100},{name:'🎉 Lazer',max:400,def:100},{name:'💰 Poupança',max:1000,def:300}];
+const BTOT=3000;
+function initBudget(){document.getElementById('budgetItems').innerHTML=BC.map((cat,i)=>`<div class="budget-item"><span style="font-size:13px;flex:0 0 120px">${cat.name}</span><input type="range" min="0" max="${cat.max}" value="${cat.def}" oninput="updB()" id="bs${i}"><span class="bv" id="bv${i}">R$ ${cat.def}</span></div>`).join('');updB();}
+function updB(){let tot=0;BC.forEach((_,i)=>{const v=parseInt(document.getElementById('bs'+i).value);document.getElementById('bv'+i).textContent='R$ '+v;tot+=v;});document.getElementById('bTotal').textContent='R$ '+tot.toLocaleString('pt-BR');const pct=Math.min(100,tot/BTOT*100);const bar=document.getElementById('bBar');bar.style.width=pct+'%';bar.style.background=tot>BTOT?'linear-gradient(90deg,var(--pink),var(--red))':'var(--grad-hero)';const edu=parseInt(document.getElementById('bs2').value),poup=parseInt(document.getElementById('bs5').value);let msg='';if(tot>BTOT)msg='⚠️ ORÇAMENTO ESTOURADO EM R$ '+(tot-BTOT).toLocaleString('pt-BR');else if(edu<50)msg='💡 Invista pelo menos R$ 50 em educação!';else if(poup<150)msg='💡 Poupança mínima recomendada: R$ 150';else msg='✅ PLANEJAMENTO EXCELENTE!';document.getElementById('bMsg').textContent=msg;}
+function submitBudget(){let tot=0;BC.forEach((_,i)=>tot+=parseInt(document.getElementById('bs'+i).value));if(tot>BTOT){showToast('⚠️ AJUSTE O ORÇAMENTO!',true);return;}addCoins(35,'📊 ORÇAMENTO APROVADO! +35 🪙');addXP(70);closeM('m-budget');}
+
+// TOAST
+function showToast(msg,red=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast'+(red?' red':'');
+  void t.offsetWidth; t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ══════════════════════════════════
+// OBJETIVOS
+// ══════════════════════════════════
+S.apostaValor = 0;
+S.apostaFreq = 'semana';
+S.objetivos = [];
+
+const CAT_ICONS = { conta:'💳', bem:'🛍️', viagem:'✈️', saude:'🏥', educacao:'📚', familia:'👨‍👩‍👧', outro:'🎯' };
+const CAT_LABELS = { conta:'Conta a pagar', bem:'Aquisição de bem', viagem:'Viagem', saude:'Saúde', educacao:'Educação', familia:'Família', outro:'Outro' };
+const GRAD_CATS = {
+  conta:'linear-gradient(135deg,#db2777,#ff3d9a)',
+  bem:'linear-gradient(135deg,#ff6b2b,#ff9a3c)',
+  viagem:'linear-gradient(135deg,#06b6d4,#22d3ee)',
+  saude:'linear-gradient(135deg,#65a30d,#84cc16)',
+  educacao:'linear-gradient(135deg,#7c3aed,#a855f7)',
+  familia:'linear-gradient(135deg,#d97706,#ffd23f)',
+  outro:'linear-gradient(135deg,#6b7280,#9ca3af)'
+};
+
+function getValorPorDia(){
+  const v = S.apostaValor;
+  if(S.apostaFreq==='dia') return v;
+  if(S.apostaFreq==='semana') return v/7;
+  if(S.apostaFreq==='mes') return v/30;
+  return 0;
+}
+
+function saveApostaConfig(){
+  const v = parseFloat(document.getElementById('obj-valor').value);
+  const f = document.getElementById('obj-freq').value;
+  if(!v||v<=0){showToast('⚠️ INFORME O VALOR',true);return;}
+  S.apostaValor=v; S.apostaFreq=f;
+  document.getElementById('obj-config-card').style.display='none';
+  renderObjEconomia();
+  document.getElementById('obj-economia').style.display='block';
+  document.getElementById('obj-add-card').style.display='block';
+  renderObjetivos();
+  showToast('✅ CONFIGURADO! AGORA ADICIONE SUA META');
+}
+
+function editApostaConfig(){
+  document.getElementById('obj-valor').value=S.apostaValor;
+  document.getElementById('obj-freq').value=S.apostaFreq;
+  document.getElementById('obj-config-card').style.display='block';
+  document.getElementById('obj-economia').style.display='none';
+}
+
+function renderObjEconomia(){
+  const porDia = getValorPorDia();
+  const total = porDia * S.streak;
+  document.getElementById('obj-por-dia').textContent = fmtBRL(porDia);
+  document.getElementById('obj-eco-dia').textContent = fmtBRL(porDia);
+  document.getElementById('obj-eco-total').textContent = fmtBRL(total);
+}
+
+function fillMeta(val, nome, cat){
+  document.getElementById('obj-meta-val').value = val;
+  document.getElementById('obj-nome').value = nome;
+  document.getElementById('obj-cat').value = cat;
+}
+
+function addObjetivo(){
+  const nome = document.getElementById('obj-nome').value.trim();
+  const val = parseFloat(document.getElementById('obj-meta-val').value);
+  const cat = document.getElementById('obj-cat').value;
+  if(!nome){showToast('⚠️ DÁ UM NOME PARA A META',true);return;}
+  if(!val||val<=0){showToast('⚠️ INFORME O VALOR DA META',true);return;}
+  if(!S.apostaValor){showToast('⚠️ CONFIGURE PRIMEIRO O VALOR QUE APOSTAVA',true);return;}
+  const id = Date.now();
+  S.objetivos.unshift({ id, nome, val, cat, criado: S.streak, pagoManual: 0 });
+  document.getElementById('obj-nome').value='';
+  document.getElementById('obj-meta-val').value='';
+  renderObjetivos();
+  addCoins(10, '🎯 META CRIADA! +10 🪙');
+  showToast('🎯 META ADICIONADA!');
+}
+
+function deleteObjetivo(id){
+  S.objetivos = S.objetivos.filter(o=>o.id!==id);
+  renderObjetivos();
+}
+
+function abonarObjetivo(id){
+  const porDia = getValorPorDia();
+  const total = porDia * S.streak;
+  const obj = S.objetivos.find(o=>o.id===id);
+  if(!obj) return;
+  obj.pagoManual = Math.min(obj.val, total);
+  renderObjetivos();
+  showToast('💰 VALOR ABONADO NA META!');
+}
+
+function renderObjetivos(){
+  if(S.apostaValor>0) renderObjEconomia();
+  const lista = document.getElementById('obj-lista');
+  const empty = document.getElementById('obj-empty');
+  if(!S.objetivos.length){
+    lista.innerHTML='';
+    empty.style.display = S.apostaValor>0 ? 'block' : 'none';
+    return;
+  }
+  empty.style.display='none';
+  const porDia = getValorPorDia();
+  const totalEco = porDia * S.streak;
+
+  lista.innerHTML = S.objetivos.map(obj => {
+    const economizado = Math.min(obj.val, Math.max(obj.pagoManual, totalEco));
+    const pct = Math.min(100, Math.round(economizado/obj.val*100));
+    const falta = Math.max(0, obj.val - economizado);
+    const diasFalta = porDia > 0 ? Math.ceil(falta/porDia) : 999;
+    const done = pct >= 100;
+
+    // Estimate finish date
+    let dataEst = '';
+    if(!done && porDia > 0){
+      const d = new Date();
+      d.setDate(d.getDate() + diasFalta);
+      dataEst = d.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+    }
+
+    const freqLabel = S.apostaFreq==='dia'?'dia':S.apostaFreq==='semana'?'semana':'mês';
+
+    return `<div class="obj-card" style="${done?'background:linear-gradient(145deg,rgba(132,204,22,.08),rgba(34,211,238,.04));border-color:rgba(132,204,22,.3)':''}">
+      <div class="obj-card-header">
+        <div class="obj-cat-icon obj-cat-${obj.cat}">${CAT_ICONS[obj.cat]}</div>
+        <div style="flex:1">
+          <div class="obj-name">${obj.nome}</div>
+          <div class="obj-cat-lbl">${CAT_LABELS[obj.cat]} • ${fmtBRL(obj.val)}</div>
+        </div>
+        <button class="obj-delete" onclick="deleteObjetivo(${obj.id})">✕</button>
+      </div>
+
+      <div class="obj-progress-row">
+        <span style="font-size:13px;color:var(--t2)">Progresso</span>
+        <span class="obj-progress-pct">${pct}%</span>
+      </div>
+      <div class="obj-pbar">
+        <div class="obj-pfill" style="width:${pct}%;background:${done?'var(--grad-lime)':GRAD_CATS[obj.cat]}"></div>
+      </div>
+
+      <div class="obj-stats">
+        <div class="obj-stat">
+          <div class="obj-stat-val" style="color:var(--lime)">${fmtBRL(economizado)}</div>
+          <div class="obj-stat-lbl">Economizado</div>
+        </div>
+        <div class="obj-stat">
+          <div class="obj-stat-val" style="color:var(--orange2)">${fmtBRL(falta)}</div>
+          <div class="obj-stat-lbl">Falta</div>
+        </div>
+        <div class="obj-stat">
+          <div class="obj-stat-val" style="color:var(--cyan)">${fmtBRL(porDia).replace('R$ ','R$')}<span style="font-size:10px;font-family:sans-serif">/dia</span></div>
+          <div class="obj-stat-lbl">Você poupa</div>
+        </div>
+      </div>
+
+      ${done ? `
+        <div class="obj-done-banner">
+          <span style="font-size:28px">🏆</span>
+          <div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.04em;color:var(--lime)">META CONQUISTADA!</div>
+            <div style="font-size:12px;color:var(--t2)">Você economizou o suficiente para realizar esta meta</div>
+          </div>
+        </div>` : `
+        <div class="obj-countdown">
+          <div style="font-size:11px;color:var(--t2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Faltam</div>
+          <div class="obj-countdown-days">${diasFalta > 999 ? '∞' : diasFalta}</div>
+          <div class="obj-countdown-lbl">dias sem apostar para realizar esta meta</div>
+          ${dataEst ? `<div class="obj-date-est">📅 Previsão: ${dataEst}</div>` : ''}
+        </div>`}
+
+  
