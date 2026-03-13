@@ -1062,7 +1062,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
       </div>
 
       <div class="card">
-        <div class="clabel">Adicionar valor poupado</div>
+        <div class="clabel">💰 GUARDAR DINHEIRO NO COFRE</div>
         <div class="inp-money">
           <div class="money-pfx">R$</div>
           <input class="money-inp" type="number" id="depInput" placeholder="0">
@@ -1074,7 +1074,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
           <button class="btn btn-sm btn-outline" onclick="quickDep(200)">R$ 200</button>
           <button class="btn btn-sm btn-outline" onclick="quickDep(500)">R$ 500</button>
         </div>
-        <button class="btn btn-cyan" onclick="doDeposit()">💰 REGISTRAR VALOR POUPADO</button>
+        <button class="btn btn-cyan" onclick="doDeposit()" style="font-size:20px;padding:16px;letter-spacing:.1em;box-shadow:0 8px 28px rgba(34,211,238,.4)">🏦 GUARDAR DINHEIRO</button>
       </div>
 
       <div class="card" id="historyCard" style="display:none">
@@ -1593,6 +1593,81 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
       </div>
     </div>
 
+
+    <!-- PAINEL CONEXÕES -->
+    <div id="conexoes-panel" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+      <div style="padding:10px 13px 8px;background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(255,107,43,.04));border-bottom:1px solid var(--b2);flex-shrink:0">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:.09em;color:var(--purple)">👥 MINHAS CONEXÕES</div>
+        <div style="font-size:11px;color:var(--t2);margin-top:2px">Pessoas na mesma jornada que você</div>
+      </div>
+      <div style="flex:1;overflow-y:auto">
+        <div onclick="openChat('maria','Maria Santos','🦊','15 dias',true)" class="padrinho-item">
+          <div class="padrinho-av online" style="background:var(--grad-purple)">🦊</div>
+          <div class="padrinho-info">
+            <div class="padrinho-name">Maria Santos</div>
+            <div class="padrinho-meta"><span class="padrinho-streak">🔥 15 dias</span><span style="font-size:10px;color:var(--t2)">Nível 3</span></div>
+          </div>
+          <div class="padrinho-unread">1</div>
+        </div>
+        <div onclick="openChat('pedro','Pedro Alves','🐉','18 dias',false)" class="padrinho-item">
+          <div class="padrinho-av away" style="background:linear-gradient(135deg,#7c3aed,#06b6d4)">🐉</div>
+          <div class="padrinho-info">
+            <div class="padrinho-name">Pedro Alves</div>
+            <div class="padrinho-meta"><span class="padrinho-streak">🔥 18 dias</span><span style="font-size:10px;color:var(--t2)">Nível 4</span></div>
+          </div>
+        </div>
+        <div onclick="openChat('rafael','Rafael Gomes','🐯','7 dias',true)" class="padrinho-item">
+          <div class="padrinho-av online" style="background:linear-gradient(135deg,#d97706,#ff6b2b)">🐯</div>
+          <div class="padrinho-info">
+            <div class="padrinho-name">Rafael Gomes</div>
+            <div class="padrinho-meta"><span class="padrinho-streak">🔥 7 dias</span><span style="font-size:10px;color:var(--t2)">Nível 2</span></div>
+          </div>
+        </div>
+        <div onclick="openChat('lucas2','Lucas Mendes','🦸','42 dias',true)" class="padrinho-item">
+          <div class="padrinho-av online" style="background:linear-gradient(135deg,#22d3ee,#84cc16)">🦸</div>
+          <div class="padrinho-info">
+            <div class="padrinho-name">Lucas Mendes</div>
+            <div class="padrinho-meta"><span class="padrinho-streak">🔥 42 dias</span><span style="font-size:10px;color:var(--t2)">Nível 5</span></div>
+          </div>
+        </div>
+        <div onclick="openChat('juliana','Juliana Rocha','🐺','55 dias',false)" class="padrinho-item">
+          <div class="padrinho-av away" style="background:linear-gradient(135deg,#a855f7,#ff3d9a)">🐺</div>
+          <div class="padrinho-info">
+            <div class="padrinho-name">Juliana Rocha</div>
+            <div class="padrinho-meta"><span class="padrinho-streak">🔥 55 dias</span><span style="font-size:10px;color:var(--t2)">Nível 5</span></div>
+          </div>
+        </div>
+        <div style="padding:12px 13px;border-top:1px solid var(--b2);margin-top:4px">
+          <div style="font-size:11px;color:var(--t2);margin-bottom:8px;line-height:1.5">Encontre mais pessoas na mesma jornada.</div>
+          <button class="btn btn-sm btn-purple" onclick="nav('social')" style="font-size:12px">👥 Ver Comunidade</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAINEL SOS -->
+    <div id="sos-panel" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+      <div style="padding:10px 13px 8px;background:linear-gradient(135deg,rgba(239,68,68,.12),rgba(255,61,154,.06));border-bottom:1px solid rgba(239,68,68,.25);flex-shrink:0">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:.09em;color:var(--red)">🆘 LINHA DE APOIO URGENTE</div>
+        <div style="font-size:11px;color:var(--t2);margin-top:2px">Padrinho de plantão ativado</div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:12px">
+        <div style="background:linear-gradient(135deg,rgba(239,68,68,.1),rgba(255,61,154,.06));border:1px solid rgba(239,68,68,.25);border-radius:14px;padding:14px;margin-bottom:12px;text-align:center">
+          <div style="font-size:32px;margin-bottom:6px">🆘</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.05em;color:var(--red);margin-bottom:6px">MODO EMERGENCIA ATIVADO</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.6">Carlos Lima, seu padrinho de plantão, foi notificado e está conectando...</div>
+        </div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:.08em;color:var(--t2);margin-bottom:8px">ACOES IMEDIATAS</div>
+        <button class="btn btn-red" style="margin-bottom:8px;font-size:14px" onclick="switchChatTab('padrinhos');setTimeout(()=>openChat('carlos','Carlos Lima','🦁','487 dias',true),100)">💬 FALAR COM PADRINHO AGORA</button>
+        <button class="btn" style="margin-bottom:8px;font-size:14px;background:var(--grad-purple)" onclick="showRecaida()">🧘 TECNICA ANTI-RECAIDA</button>
+        <button class="btn btn-outline" style="margin-bottom:8px;font-size:14px" onclick="callHelp()">📞 CVV - LIGAR 188 (24H)</button>
+        <div style="background:var(--card);border:1px solid var(--b2);border-radius:12px;padding:12px;margin-top:8px">
+          <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Lembre-se agora</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.65" id="sos-motivo-txt">Voce esta fazendo isso pela sua familia.</div>
+          <div style="font-size:11px;color:var(--orange2);margin-top:8px;font-weight:700" id="sos-streak-txt">🔥 Voce tem 23 dias de conquista. Nao perca isso.</div>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /sidebar-right -->
 
   </div><!-- /app-body -->
@@ -1885,6 +1960,8 @@ const PADRINHO_RESPONSES = {
   maria: ['Oi! Também estou na luta 💪', 'A gente se apoia!', 'Como você está hoje?'],
   pedro: ['Oi! Tô passando por dias difíceis também...', 'Mas vamos juntos né!'],
   rafael: ['Oi! 7 dias aqui, ainda novinho nessa jornada!', 'Mas já tô sentindo a diferença 💪'],
+  lucas2: ['Oi! 42 dias aqui, vamos juntos! 💪', 'Como você está se sentindo hoje?', 'Cada dia é uma vitória!'],
+  juliana: ['Oi! Também estou na jornada, 55 dias aqui 🌟', 'O que posso fazer por você?', 'Juntos é mais fácil!'],
 };
 
 let currentChat = null;
@@ -1901,8 +1978,13 @@ function openChat(id, name, av, days, online){
   document.getElementById('chat-status').style.color = online ? 'var(--lime)' : 'var(--yellow)';
   document.getElementById('chat-days').textContent = days.replace(' dias','');
 
-  // Hide list, show chat
-  document.getElementById('padrinhos-list-panel').classList.add('hidden');
+  // Hide all side panels, show chat
+  const listPanel = document.getElementById('padrinhos-list-panel');
+  const conPanel  = document.getElementById('conexoes-panel');
+  const sosPanel  = document.getElementById('sos-panel');
+  if(listPanel) listPanel.style.display = 'none';
+  if(conPanel)  conPanel.style.display  = 'none';
+  if(sosPanel)  sosPanel.style.display  = 'none';
   const panel = document.getElementById('chat-panel');
   panel.classList.add('open');
 
@@ -1974,7 +2056,18 @@ function sendSOS(text){
 
 function backToList(){
   currentChat = null;
-  document.getElementById('padrinhos-list-panel').classList.remove('hidden');
+  // Descobrir qual tab está ativa para restaurar o painel correto
+  const activeTab = document.querySelector('.chat-tab.active');
+  const tabId = activeTab ? activeTab.id : 'ctab-padrinhos';
+  const listPanel = document.getElementById('padrinhos-list-panel');
+  const conPanel  = document.getElementById('conexoes-panel');
+  const sosPanel  = document.getElementById('sos-panel');
+  if(listPanel) listPanel.style.display = 'none';
+  if(conPanel)  conPanel.style.display  = 'none';
+  if(sosPanel)  sosPanel.style.display  = 'none';
+  if(tabId === 'ctab-conexoes' && conPanel) conPanel.style.display = 'flex';
+  else if(tabId === 'ctab-sos' && sosPanel) sosPanel.style.display = 'flex';
+  else if(listPanel) listPanel.style.display = 'flex';
   const panel = document.getElementById('chat-panel');
   panel.classList.remove('open');
   document.querySelectorAll('.padrinho-item').forEach(el=>el.classList.remove('active-chat'));
@@ -1983,20 +2076,35 @@ function backToList(){
 function switchChatTab(tab){
   document.querySelectorAll('.chat-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('ctab-'+tab).classList.add('active');
-  if(tab==='sos'){
+
+  // esconder painel de chat individual se aberto
+  backToList();
+
+  // esconder todos os sub-painéis
+  const listPanel = document.getElementById('padrinhos-list-panel');
+  const conPanel  = document.getElementById('conexoes-panel');
+  const sosPanel  = document.getElementById('sos-panel');
+  if(listPanel) listPanel.style.display = 'none';
+  if(conPanel)  conPanel.style.display  = 'none';
+  if(sosPanel)  sosPanel.style.display  = 'none';
+
+  if(tab==='padrinhos'){
+    if(listPanel) listPanel.style.display = 'flex';
+  } else if(tab==='conexoes'){
+    if(conPanel) conPanel.style.display = 'flex';
+  } else if(tab==='sos'){
+    if(sosPanel) sosPanel.style.display = 'flex';
     sendSOSAlert();
   }
 }
 
 function sendSOSAlert(){
-  // Simula abertura com Carlos como padrinho SOS
   showToast('🆘 PADRINHO DE PLANTÃO NOTIFICADO!');
-  setTimeout(()=>{
-    openChat('carlos','Carlos Lima','🦁','487 dias',true);
-    const hist = CHAT_HISTORIES['carlos'];
-    hist.push({from:'them', text:'🆘 Recebi seu chamado de SOS. Estou aqui. O que está acontecendo? Me conta tudo, não tem julgamento.', time: now()});
-    renderChatMsgs('carlos','Carlos Lima','🦁',true);
-  }, 600);
+  // Atualizar painel SOS com dados reais
+  const mt = document.getElementById('sos-motivo-txt');
+  const st = document.getElementById('sos-streak-txt');
+  if(mt) mt.textContent = '"' + S.motivo + '"';
+  if(st) st.textContent = '🔥 Você tem ' + S.streak + ' dias de conquista. Não perca isso.';
 }
 
 function now(){
