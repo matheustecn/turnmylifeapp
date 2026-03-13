@@ -611,16 +611,16 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">E-mail</label>
-        <input class="form-input" id="l-email" type="email" placeholder="seu@email.com">
-        <div class="form-error" id="l-err">E-mail ou senha incorretos.</div>
+        <label class="form-label">Usuário</label>
+        <input class="form-input" id="l-email" type="text" placeholder="seu usuário">
+        <div class="form-error" id="l-err">Usuário ou senha incorretos.</div>
       </div>
       <div class="form-group">
         <label class="form-label">Senha</label>
         <input class="form-input" id="l-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
       </div>
       <button class="auth-btn" onclick="doLogin()">ENTRAR →</button>
-      <p class="auth-note">Demo: <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="6c080901032c18191e02011500050a09420d1c1c">[email&#160;protected]</a></strong> / <strong>123456</strong></p>
+      <p class="auth-note">Login: <strong>admin</strong> / Senha: <strong>12345</strong></p>
     </div>
 
     <div id="register-form" style="display:none;width:100%">
@@ -630,14 +630,14 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
         <div class="form-error" id="r-err-name">Preencha seu nome.</div>
       </div>
       <div class="form-group">
-        <label class="form-label">E-mail</label>
-        <input class="form-input" id="r-email" type="email" placeholder="seu@email.com">
-        <div class="form-error" id="r-err-email">E-mail inválido.</div>
+        <label class="form-label">Usuário</label>
+        <input class="form-input" id="r-email" type="text" placeholder="escolha um usuário">
+        <div class="form-error" id="r-err-email">Preencha o usuário.</div>
       </div>
       <div class="form-group">
         <label class="form-label">Senha</label>
-        <input class="form-input" id="r-pass" type="password" placeholder="Mínimo 6 caracteres">
-        <div class="form-error" id="r-err-pass">Mínimo 6 caracteres.</div>
+        <input class="form-input" id="r-pass" type="password" placeholder="Mínimo 5 caracteres">
+        <div class="form-error" id="r-err-pass">Mínimo 5 caracteres.</div>
       </div>
 
       <!-- MOTIVO DE PARAR -->
@@ -1493,16 +1493,16 @@ function switchAuth(t){
 function doLogin(){
   const em=document.getElementById('l-email').value.trim(), pw=document.getElementById('l-pass').value;
   const err=document.getElementById('l-err');
-  if((em==='demo@turnmylife.app'&&pw==='123456')||(em.includes('@')&&pw.length>=6)){
-    S.userName=em==='demo@turnmylife.app'?'João Silva':em.split('@')[0]; launch();
+  if(em==='admin'&&pw==='12345'){
+    S.userName='Admin'; launch();
   } else { err.style.display='block'; setTimeout(()=>err.style.display='none',3000); }
 }
 function doRegister(){
   const n=document.getElementById('r-name').value.trim(), em=document.getElementById('r-email').value.trim(), pw=document.getElementById('r-pass').value, motivo=document.getElementById('r-motivo').value.trim();
   let ok=true;
   if(!n){document.getElementById('r-err-name').style.display='block';ok=false;}else document.getElementById('r-err-name').style.display='none';
-  if(!em.includes('@')){document.getElementById('r-err-email').style.display='block';ok=false;}else document.getElementById('r-err-email').style.display='none';
-  if(pw.length<6){document.getElementById('r-err-pass').style.display='block';ok=false;}else document.getElementById('r-err-pass').style.display='none';
+  if(!em){document.getElementById('r-err-email').style.display='block';ok=false;}else document.getElementById('r-err-email').style.display='none';
+  if(pw.length<5){document.getElementById('r-err-pass').style.display='block';ok=false;}else document.getElementById('r-err-pass').style.display='none';
   if(!motivo){document.getElementById('r-err-motivo').style.display='block';ok=false;}else document.getElementById('r-err-motivo').style.display='none';
   if(!ok)return;
   S.userName=n; S.streak=0; S.coins=100; S.xp=0; S.level=1;
